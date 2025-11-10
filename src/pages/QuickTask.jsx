@@ -52,8 +52,172 @@ function DelegationDataPage() {
     const [editedData, setEditedData] = useState({})
     const [viewingRow, setViewingRow] = useState(null)
 
+    // State for dropdown options from Master sheet (same as SystemForm)
+    const [nameOptions, setNameOptions] = useState([]);
+    const [systemOptions, setSystemOptions] = useState([]);
+    const [ipOptions, setIpOptions] = useState([]);
+    const [extensionOptions, setExtensionOptions] = useState([]);
+    const [mobileOptions, setMobileOptions] = useState([]);
+    const [locationOptions, setLocationOptions] = useState([]);
+    const [jioOptions, setJioOptions] = useState([]);
+    const [airtelOptions, setAirtelOptions] = useState([]);
+    const [ideaOptions, setIdeaOptions] = useState([]);
+    const [emailOptions, setEmailOptions] = useState([]);
+    const [extensionOutsideOptions, setExtensionOutsideOptions] = useState([]);
+    const [departmentOptions, setDepartmentOptions] = useState([]);
+
+    // State for multi-select systems
+    const [selectedSystems, setSelectedSystems] = useState([]);
+    const [showSystemDropdown, setShowSystemDropdown] = useState(false);
+
     // Debounced search term for better performance
     const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
+    // Fetch all data from Master sheet (same function as SystemForm)
+    const fetchMasterData = async () => {
+        try {
+            const masterSheetId = "1poFyeN1S_1460vD2E8IrpgcDnBkpYgQ15OwEysVBb-M";
+            const masterSheetName = "Master";
+
+            const url = `https://docs.google.com/spreadsheets/d/${masterSheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(
+                masterSheetName
+            )}`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch master data: ${response.status}`);
+            }
+
+            const text = await response.text();
+            const jsonStart = text.indexOf("{");
+            const jsonEnd = text.lastIndexOf("}");
+            const jsonString = text.substring(jsonStart, jsonEnd + 1);
+            const data = JSON.parse(jsonString);
+
+            if (!data.table || !data.table.rows) {
+                console.log("No master data found");
+                return;
+            }
+
+            // Extract data from all required columns
+            const names = [];
+            const systems = [];
+            const ips = [];
+            const extensions = [];
+            const mobiles = [];
+            const locations = [];
+            const jioNumbers = [];
+            const airtelNumbers = [];
+            const ideaNumbers = [];
+            const emails = [];
+            const extensionOutside = [];
+            const department = [];
+
+            // Process all rows starting from index 1 (skip header)
+            data.table.rows.slice(0).forEach((row) => {
+                // Column A - IP (index 0)
+                if (row.c && row.c[0] && row.c[0].v) {
+                    const value = row.c[0].v.toString().trim();
+                    if (value !== "") ips.push(value);
+                }
+
+                // Column B - Email (index 1)
+                if (row.c && row.c[1] && row.c[1].v) {
+                    const value = row.c[1].v.toString().trim();
+                    if (value !== "") emails.push(value);
+                }
+
+                // Column C - Jio No. (index 2)
+                if (row.c && row.c[2] && row.c[2].v) {
+                    const value = row.c[2].v.toString().trim();
+                    if (value !== "") jioNumbers.push(value);
+                }
+
+                // Column D - Airtel No. (index 3)
+                if (row.c && row.c[4] && row.c[4].v) {
+                    const value = row.c[4].v.toString().trim();
+                    if (value !== "") airtelNumbers.push(value);
+                }
+
+                // Column E - Idea No. (index 4)
+                if (row.c && row.c[3] && row.c[3].v) {
+                    const value = row.c[3].v.toString().trim();
+                    if (value !== "") ideaNumbers.push(value);
+                }
+
+                // Column F - System (index 5)
+                if (row.c && row.c[5] && row.c[5].v) {
+                    const value = row.c[5].v.toString().trim();
+                    if (value !== "") systems.push(value);
+                }
+
+                // Column G - Name (index 6)
+                if (row.c && row.c[6] && row.c[6].v) {
+                    const value = row.c[6].v.toString().trim();
+                    if (value !== "") names.push(value);
+                }
+
+                // Column H - Location (index 7)
+                if (row.c && row.c[7] && row.c[7].v) {
+                    const value = row.c[7].v.toString().trim();
+                    if (value !== "") locations.push(value);
+                }
+
+                // Column I - Extension (index 8)
+                if (row.c && row.c[8] && row.c[8].v) {
+                    const value = row.c[8].v.toString().trim();
+                    if (value !== "") extensions.push(value);
+                }
+
+                // Column J - Mobile (index 9)
+                if (row.c && row.c[9] && row.c[9].v) {
+                    const value = row.c[9].v.toString().trim();
+                    if (value !== "") mobiles.push(value);
+                }
+
+                if (row.c && row.c[10] && row.c[10].v) {
+                    const value = row.c[10].v.toString().trim();
+                    if (value !== "") extensionOutside.push(value);
+                }
+
+                if (row.c && row.c[11] && row.c[11].v) {
+                    const value = row.c[11].v.toString().trim();
+                    if (value !== "") department.push(value);
+                }
+            });
+
+            // Remove duplicates and set state
+            setNameOptions([...new Set(names)].sort());
+            setSystemOptions([...new Set(systems)].sort());
+            setIpOptions([...new Set(ips)].sort());
+            setExtensionOptions([...new Set(extensions)].sort());
+            setMobileOptions([...new Set(mobiles)].sort());
+            setLocationOptions([...new Set(locations)].sort());
+            setJioOptions([...new Set(jioNumbers)].sort());
+            setAirtelOptions([...new Set(airtelNumbers)].sort());
+            setIdeaOptions([...new Set(ideaNumbers)].sort());
+            setEmailOptions([...new Set(emails)].sort());
+            setExtensionOutsideOptions([...new Set(extensionOutside)].sort());
+            setDepartmentOptions([...new Set(department)].sort());
+
+            console.log("Master sheet data loaded successfully");
+        } catch (error) {
+            console.error("Error fetching master sheet data:", error);
+            // Set default options if fetch fails
+            setNameOptions(["User 1", "User 2"]);
+            setSystemOptions(["System 1", "System 2"]);
+            setIpOptions(["192.168.1.1", "192.168.1.2"]);
+            setExtensionOptions(["1001", "1002"]);
+            setMobileOptions(["9876543210", "9876543211"]);
+            setLocationOptions(['SRMPL', 'AAPL', 'GGIPL', 'PIL', 'CO']);
+            setJioOptions(["9876543210", "9876543211"]);
+            setAirtelOptions(["9876543210", "9876543211"]);
+            setIdeaOptions(["9876543210", "9876543211"]);
+            setEmailOptions(["user1@example.com", "user2@example.com"]);
+            setExtensionOutsideOptions(["2001", "2002"]);
+            setDepartmentOptions(["IT", "HR", "Finance"]);
+        }
+    };
 
     const formatDateToDDMMYYYY = useCallback((date) => {
         const day = date.getDate().toString().padStart(2, "0")
@@ -166,10 +330,110 @@ function DelegationDataPage() {
         return filtered.sort(sortDateWise)
     }, [accountData, debouncedSearchTerm, sortDateWise])
 
+    // Simple Dropdown Component (same as SystemForm)
+    const DropdownField = ({ id, name, value, options, onChange, label, placeholder }) => (
+        <select
+            id={id}
+            name={name}
+            value={value || ""}
+            onChange={onChange}
+            className="w-full rounded-md border border-gray-200 p-2 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+        >
+            <option value="">{placeholder}</option>
+            {options.map((option, index) => (
+                <option key={index} value={option}>
+                    {option}
+                </option>
+            ))}
+        </select>
+    );
+
+    // System Dropdown with Checkboxes Component (same as SystemForm)
+    const SystemDropdownWithCheckboxes = () => (
+        <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+                System
+            </label>
+            <div className="relative">
+                <button
+                    type="button"
+                    onClick={() => setShowSystemDropdown(!showSystemDropdown)}
+                    className="w-full rounded-md border border-gray-200 p-2 text-left focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500 bg-white"
+                >
+                    {selectedSystems.length > 0
+                        ? `${selectedSystems.length} system(s) selected`
+                        : "Select systems"}
+                </button>
+
+                {showSystemDropdown && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                        <div className="p-2 space-y-2">
+                            {systemOptions.map((system, index) => (
+                                <label key={index} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedSystems.includes(system)}
+                                        onChange={() => handleSystemCheckboxChange(system)}
+                                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm text-gray-700">{system}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <div className="border-t border-gray-200 p-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowSystemDropdown(false)}
+                                className="w-full text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+            {selectedSystems.length > 0 && (
+                <div className="mt-2">
+                    <p className="text-sm text-gray-600 mb-1">Selected systems:</p>
+                    <div className="flex flex-wrap gap-1">
+                        {selectedSystems.map((system, index) => (
+                            <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                            >
+                                {system}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    const handleSystemCheckboxChange = (system) => {
+        setSelectedSystems(prev => {
+            const newSelectedSystems = prev.includes(system)
+                ? prev.filter(item => item !== system)
+                : [...prev, system];
+
+            // Update editedData with selected systems
+            setEditedData(prevFormData => ({
+                ...prevFormData,
+                col2: newSelectedSystems.join(", ")
+            }));
+
+            return newSelectedSystems;
+        });
+    };
+
     const handleEdit = useCallback((account) => {
         console.log("Editing account:", account);
         setEditingRow(account._id);
-        // Initialize editedData with all current values - don't use fallback values
+
+        // Parse systems from comma-separated string to array
+        const systemsArray = account["col2"] ? account["col2"].split(",").map(s => s.trim()).filter(s => s) : [];
+
+        // Initialize editedData with all current values
         setEditedData({
             col1: account["col1"] || "",
             col2: account["col2"] || "",
@@ -186,6 +450,10 @@ function DelegationDataPage() {
             col13: account["col13"] || "",
             col14: account["col14"] || ""
         });
+
+        // Set selected systems for multi-select
+        setSelectedSystems(systemsArray);
+        setShowSystemDropdown(false);
     }, []);
 
     const handleSave = useCallback(async () => {
@@ -195,6 +463,7 @@ function DelegationDataPage() {
             console.log("=== SAVE DEBUG INFO ===");
             console.log("Editing Row ID:", editingRow);
             console.log("Edited Data:", editedData);
+            console.log("Selected Systems:", selectedSystems);
             console.log("Seq No:", editedData["col14"]);
 
             if (!editedData["col14"]) {
@@ -208,7 +477,7 @@ function DelegationDataPage() {
                 seqNo: editedData["col14"],
                 updates: {
                     name: editedData["col1"] || "",           // Name -> Column B
-                    system: editedData["col2"] || "",         // System -> Column C  
+                    system: selectedSystems.join(", ") || "", // System -> Column C (use selectedSystems array)
                     specification: editedData["col3"] || "",  // Specification -> Column D
                     ipAddress: editedData["col4"] || "",      // IP Address -> Column E
                     location: editedData["col5"] || "",       // Location -> Column F
@@ -237,12 +506,19 @@ function DelegationDataPage() {
             console.log("Server response:", result);
 
             if (result.success) {
+                // Update local state with the new data including systems
+                const updatedData = {
+                    ...editedData,
+                    col2: selectedSystems.join(", ") // Update systems in the display data
+                };
+
                 setAccountData(prev => prev.map(item =>
-                    item._id === editingRow ? { ...item, ...editedData } : item
+                    item._id === editingRow ? { ...item, ...updatedData } : item
                 ));
                 setSuccessMessage("Data updated successfully!");
                 setEditingRow(null);
                 setEditedData({});
+                setSelectedSystems([]);
             } else {
                 throw new Error(result.error || "Failed to update data");
             }
@@ -252,11 +528,13 @@ function DelegationDataPage() {
         } finally {
             setLoading(false);
         }
-    }, [editingRow, editedData]);
+    }, [editingRow, editedData, selectedSystems]);
 
     const handleCancelEdit = useCallback(() => {
         setEditingRow(null)
         setEditedData({})
+        setSelectedSystems([])
+        setShowSystemDropdown(false)
     }, [])
 
     const handleDelete = useCallback(async (account) => {
@@ -399,6 +677,7 @@ function DelegationDataPage() {
 
     useEffect(() => {
         fetchSheetData()
+        fetchMasterData() // Fetch dropdown options when component mounts
     }, [fetchSheetData])
 
     const toggleHistory = useCallback(() => {
@@ -407,108 +686,6 @@ function DelegationDataPage() {
     }, [resetFilters])
 
     const selectedItemsCount = selectedItems.size
-
-    // Render editable input field
-    const renderEditableField = (field, value, placeholder = "—") => (
-        <input
-            type="text"
-            value={value || ""} // This will show empty string if value is null/undefined
-            onChange={(e) => {
-                console.log("Input changed:", field, e.target.value);
-                handleInputChange(field, e.target.value);
-            }}
-            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder={placeholder}
-        />
-    );
-
-    // Render mobile table row
-    const renderMobileTableRow = (account) => {
-        const isEditing = editingRow === account._id
-        const rowColorClass = getRowColor(account["col17"])
-
-        return (
-            <tr key={account._id} className={`border-b border-gray-200 ${rowColorClass}`}>
-                <td className="px-3 py-2 whitespace-nowrap">
-                    <div className="flex space-x-1">
-                        {isEditing ? (
-                            <>
-                                <button
-                                    onClick={handleSave}
-                                    className="text-green-600 hover:text-green-800"
-                                    title="Save"
-                                >
-                                    <Save size={14} />
-                                </button>
-                                <button
-                                    onClick={handleCancelEdit}
-                                    className="text-red-600 hover:text-red-800"
-                                    title="Cancel"
-                                >
-                                    <XCircle size={14} />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={() => handleEdit(account)}
-                                    className="text-blue-600 hover:text-blue-800"
-                                    title="Edit"
-                                >
-                                    <Edit size={14} />
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(account)}
-                                    className="text-red-600 hover:text-red-800"
-                                    title="Delete"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                                <button
-                                    onClick={() => handleView(account)}
-                                    className="text-green-600 hover:text-green-800"
-                                    title="View"
-                                >
-                                    <Eye size={14} />
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-xs">
-                    {account["col14"] || "—"}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-xs">
-                    {isEditing ? (
-                        renderEditableField("col1", editedData["col1"])
-                    ) : (
-                        <span>{account["col1"] || "—"}</span>
-                    )}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-xs">
-                    {isEditing ? (
-                        renderEditableField("col13", editedData["col13"])
-                    ) : (
-                        <span>{account["col13"] || "—"}</span>
-                    )}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-xs">
-                    {isEditing ? (
-                        renderEditableField("col2", editedData["col2"])
-                    ) : (
-                        <span>{account["col2"] || "—"}</span>
-                    )}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-xs">
-                    {isEditing ? (
-                        renderEditableField("col3", editedData["col3"])
-                    ) : (
-                        <span>{account["col3"] || "—"}</span>
-                    )}
-                </td>
-            </tr>
-        )
-    }
 
     return (
         <div className="space-y-6">
@@ -602,7 +779,7 @@ function DelegationDataPage() {
                                                 Department
                                             </th>
                                             <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
-                                                System
+                                                Alloted System
                                             </th>
                                             <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Specification
@@ -639,7 +816,6 @@ function DelegationDataPage() {
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {filteredAccountData.length > 0 ? (
                                             filteredAccountData.map((account) => {
-                                                const isEditing = editingRow === account._id
                                                 const rowColorClass = getRowColor(account["col17"])
                                                 return (
                                                     <tr
@@ -648,143 +824,70 @@ function DelegationDataPage() {
                                                     >
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             <div className="flex space-x-2">
-                                                                {isEditing ? (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={handleSave}
-                                                                            className="text-green-600 hover:text-green-800"
-                                                                            title="Save"
-                                                                        >
-                                                                            <Save size={16} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={handleCancelEdit}
-                                                                            className="text-red-600 hover:text-red-800"
-                                                                            title="Cancel"
-                                                                        >
-                                                                            <XCircle size={16} />
-                                                                        </button>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={() => handleEdit(account)}
-                                                                            className="text-blue-600 hover:text-blue-800"
-                                                                            title="Edit"
-                                                                        >
-                                                                            <Edit size={16} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleDelete(account)}
-                                                                            className="text-red-600 hover:text-red-800"
-                                                                            title="Delete"
-                                                                        >
-                                                                            <Trash2 size={16} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleView(account)}
-                                                                            className="text-green-600 hover:text-green-800"
-                                                                            title="View"
-                                                                        >
-                                                                            <Eye size={16} />
-                                                                        </button>
-                                                                    </>
-                                                                )}
+                                                                <button
+                                                                    onClick={() => handleEdit(account)}
+                                                                    className="text-blue-600 hover:text-blue-800"
+                                                                    title="Edit"
+                                                                >
+                                                                    <Edit size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDelete(account)}
+                                                                    className="text-red-600 hover:text-red-800"
+                                                                    title="Delete"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleView(account)}
+                                                                    className="text-green-600 hover:text-green-800"
+                                                                    title="View"
+                                                                >
+                                                                    <Eye size={16} />
+                                                                </button>
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             <div className="text-sm text-gray-900">{account["col14"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col1", editedData["col1"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col1"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col1"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col13", editedData["col13"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col13"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col13"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col2", editedData["col2"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col2"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col2"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col3", editedData["col3"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col3"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col3"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col4", editedData["col4"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col4"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col4"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col5", editedData["col5"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col5"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col5"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col6", editedData["col6"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col6"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col6"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col12", editedData["col12"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col12"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col12"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col7", editedData["col7"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col7"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col7"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col8", editedData["col8"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col8"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col8"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col9", editedData["col9"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col9"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col9"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col10", editedData["col10"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col10"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col10"] || "—"}</div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col11", editedData["col11"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col11"] || "—"}</div>
-                                                            )}
+                                                            <div className="text-sm text-gray-900">{account["col11"] || "—"}</div>
                                                         </td>
                                                     </tr>
                                                 )
@@ -801,55 +904,54 @@ function DelegationDataPage() {
                             </div>
                         </div>
 
-                        {/* Mobile Table View */}
                         <div className="md:hidden block">
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Actions
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Seq No.
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Name
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Department
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
-                                                System
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                                Alloted System
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Specification
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 IP Address
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Location
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Extension
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
-                                                Outside Extension
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                                Outside Ext
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Mobile
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Jio No.
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Airtel No
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Idea No.
                                             </th>
-                                            <th className="sticky top-0 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
+                                            <th className="sticky top-0 px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 z-10">
                                                 Email
                                             </th>
                                         </tr>
@@ -857,152 +959,79 @@ function DelegationDataPage() {
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {filteredAccountData.length > 0 ? (
                                             filteredAccountData.map((account) => {
-                                                const isEditing = editingRow === account._id
                                                 const rowColorClass = getRowColor(account["col17"])
                                                 return (
-                                                    <tr
-                                                        key={account._id}
-                                                        className={`hover:bg-gray-50 ${rowColorClass}`}
-                                                    >
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="flex space-x-2">
-                                                                {isEditing ? (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={handleSave}
-                                                                            className="text-green-600 hover:text-green-800"
-                                                                            title="Save"
-                                                                        >
-                                                                            <Save size={16} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={handleCancelEdit}
-                                                                            className="text-red-600 hover:text-red-800"
-                                                                            title="Cancel"
-                                                                        >
-                                                                            <XCircle size={16} />
-                                                                        </button>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={() => handleEdit(account)}
-                                                                            className="text-blue-600 hover:text-blue-800"
-                                                                            title="Edit"
-                                                                        >
-                                                                            <Edit size={16} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleDelete(account)}
-                                                                            className="text-red-600 hover:text-red-800"
-                                                                            title="Delete"
-                                                                        >
-                                                                            <Trash2 size={16} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => handleView(account)}
-                                                                            className="text-green-600 hover:text-green-800"
-                                                                            title="View"
-                                                                        >
-                                                                            <Eye size={16} />
-                                                                        </button>
-                                                                    </>
-                                                                )}
+                                                    <tr key={account._id} className={`border-b border-gray-200 ${rowColorClass}`}>
+                                                        <td className="px-3 py-2 whitespace-nowrap">
+                                                            <div className="flex space-x-1">
+                                                                <button
+                                                                    onClick={() => handleEdit(account)}
+                                                                    className="text-blue-600 hover:text-blue-800"
+                                                                    title="Edit"
+                                                                >
+                                                                    <Edit size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDelete(account)}
+                                                                    className="text-red-600 hover:text-red-800"
+                                                                    title="Delete"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleView(account)}
+                                                                    className="text-green-600 hover:text-green-800"
+                                                                    title="View"
+                                                                >
+                                                                    <Eye size={14} />
+                                                                </button>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            <div className="text-sm text-gray-900">{account["col14"] || "—"}</div>
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            {account["col14"] || "—"}
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col1", editedData["col1"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col1"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col1"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col13", editedData["col13"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col13"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col13"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col2", editedData["col2"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col2"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col2"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col3", editedData["col3"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col3"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span className="max-w-xs truncate block" title={account["col3"] || ""}>
+                                                                {account["col3"] || "—"}
+                                                            </span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col4", editedData["col4"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col4"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col4"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col5", editedData["col5"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col5"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col5"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col6", editedData["col6"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col6"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col6"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col12", editedData["col12"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col12"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col12"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col7", editedData["col7"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col7"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col7"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col8", editedData["col8"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col8"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col8"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col9", editedData["col9"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col9"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col9"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col10", editedData["col10"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col10"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span>{account["col10"] || "—"}</span>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
-                                                            {isEditing ? (
-                                                                renderEditableField("col11", editedData["col11"])
-                                                            ) : (
-                                                                <div className="text-sm text-gray-900">{account["col11"] || "—"}</div>
-                                                            )}
+                                                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                                                            <span className="max-w-xs truncate block" title={account["col11"] || ""}>
+                                                                {account["col11"] || "—"}
+                                                            </span>
                                                         </td>
                                                     </tr>
                                                 )
@@ -1021,6 +1050,224 @@ function DelegationDataPage() {
                     </div>
                 )}
             </div>
+
+            {/* Edit Modal */}
+            {editingRow && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="bg-gradient-to-r from-blue-400 to-gray-400 p-4 rounded-t-lg">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-white text-lg font-semibold">Edit Record</h3>
+                                <button
+                                    onClick={handleCancelEdit}
+                                    className="text-white hover:text-gray-200"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700">
+                                        Name
+                                    </label>
+                                    <DropdownField
+                                        id="edit-name"
+                                        name="col1"
+                                        value={editedData["col1"] || ""}
+                                        options={nameOptions}
+                                        onChange={(e) => handleInputChange("col1", e.target.value)}
+                                        placeholder="Select Name"
+                                    />
+                                </div>
+
+                                <SystemDropdownWithCheckboxes />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="edit-specs" className="block text-sm font-medium text-gray-700">
+                                    System Specs
+                                </label>
+                                <textarea
+                                    id="edit-specs"
+                                    name="col3"
+                                    value={editedData["col3"] || ""}
+                                    onChange={(e) => handleInputChange("col3", e.target.value)}
+                                    placeholder="Enter system specifications/remarks"
+                                    rows={3}
+                                    className="w-full rounded-md border border-gray-200 p-2 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-ip" className="block text-sm font-medium text-gray-700">
+                                        IP Address
+                                    </label>
+                                    <DropdownField
+                                        id="edit-ip"
+                                        name="col4"
+                                        value={editedData["col4"] || ""}
+                                        options={ipOptions}
+                                        onChange={(e) => handleInputChange("col4", e.target.value)}
+                                        placeholder="Select IP"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-location" className="block text-sm font-medium text-gray-700">
+                                        Location
+                                    </label>
+                                    <DropdownField
+                                        id="edit-location"
+                                        name="col5"
+                                        value={editedData["col5"] || ""}
+                                        options={locationOptions}
+                                        onChange={(e) => handleInputChange("col5", e.target.value)}
+                                        placeholder="Select Location"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-extension" className="block text-sm font-medium text-gray-700">
+                                        Extension
+                                    </label>
+                                    <DropdownField
+                                        id="edit-extension"
+                                        name="col6"
+                                        value={editedData["col6"] || ""}
+                                        options={extensionOptions}
+                                        onChange={(e) => handleInputChange("col6", e.target.value)}
+                                        placeholder="Select Extension"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-mobile" className="block text-sm font-medium text-gray-700">
+                                        Mobile
+                                    </label>
+                                    <DropdownField
+                                        id="edit-mobile"
+                                        name="col7"
+                                        value={editedData["col7"] || ""}
+                                        options={mobileOptions}
+                                        onChange={(e) => handleInputChange("col7", e.target.value)}
+                                        placeholder="Select Mobile"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-extension-outside" className="block text-sm font-medium text-gray-700">
+                                        Extension Outside
+                                    </label>
+                                    <DropdownField
+                                        id="edit-extension-outside"
+                                        name="col12"
+                                        value={editedData["col12"] || ""}
+                                        options={extensionOutsideOptions}
+                                        onChange={(e) => handleInputChange("col12", e.target.value)}
+                                        placeholder="Select Outside Extension"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-department" className="block text-sm font-medium text-gray-700">
+                                        Department
+                                    </label>
+                                    <DropdownField
+                                        id="edit-department"
+                                        name="col13"
+                                        value={editedData["col13"] || ""}
+                                        options={departmentOptions}
+                                        onChange={(e) => handleInputChange("col13", e.target.value)}
+                                        placeholder="Select Department"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-jio" className="block text-sm font-medium text-gray-700">
+                                        Jio Number
+                                    </label>
+                                    <DropdownField
+                                        id="edit-jio"
+                                        name="col8"
+                                        value={editedData["col8"] || ""}
+                                        options={jioOptions}
+                                        onChange={(e) => handleInputChange("col8", e.target.value)}
+                                        placeholder="Select Jio Number"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-airtel" className="block text-sm font-medium text-gray-700">
+                                        Airtel No
+                                    </label>
+                                    <DropdownField
+                                        id="edit-airtel"
+                                        name="col9"
+                                        value={editedData["col9"] || ""}
+                                        options={airtelOptions}
+                                        onChange={(e) => handleInputChange("col9", e.target.value)}
+                                        placeholder="Select Airtel Number"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-idea" className="block text-sm font-medium text-gray-700">
+                                        Idea No
+                                    </label>
+                                    <DropdownField
+                                        id="edit-idea"
+                                        name="col10"
+                                        value={editedData["col10"] || ""}
+                                        options={ideaOptions}
+                                        onChange={(e) => handleInputChange("col10", e.target.value)}
+                                        placeholder="Select Idea Number"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="edit-email" className="block text-sm font-medium text-gray-700">
+                                        Email
+                                    </label>
+                                    <DropdownField
+                                        id="edit-email"
+                                        name="col11"
+                                        value={editedData["col11"] || ""}
+                                        options={emailOptions}
+                                        onChange={(e) => handleInputChange("col11", e.target.value)}
+                                        placeholder="Select Email"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex justify-between">
+                            <button
+                                onClick={handleCancelEdit}
+                                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={loading}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                            >
+                                {loading ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* View Details Modal */}
             {viewingRow && (

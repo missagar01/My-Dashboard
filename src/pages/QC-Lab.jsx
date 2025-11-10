@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AdminLayout from "../components/layout/AdminLayout";
 
 export default function SystemForm() {
@@ -33,12 +33,80 @@ export default function SystemForm() {
         email: "",
         extensionOutside: "",
         department: "",
-
     });
 
     // State for checkbox selections
     const [selectedSystems, setSelectedSystems] = useState([]);
     const [showSystemDropdown, setShowSystemDropdown] = useState(false);
+
+    // Advanced dropdown states
+    const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+    const [showNameDropdown, setNameDropdown] = useState(false);
+    const [showIpDropdown, setShowIpDropdown] = useState(false);
+    const [showExtensionDropdown, setShowExtensionDropdown] = useState(false);
+    const [showMobileDropdown, setShowMobileDropdown] = useState(false);
+    const [showJioDropdown, setShowJioDropdown] = useState(false);
+    const [showAirtelDropdown, setShowAirtelDropdown] = useState(false);
+    const [showIdeaDropdown, setShowIdeaDropdown] = useState(false);
+    const [showEmailDropdown, setShowEmailDropdown] = useState(false);
+    const [showExtensionOutsideDropdown, setShowExtensionOutsideDropdown] = useState(false);
+    const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
+
+    // Loading states for add new feature
+    const [isAddingLocation, setIsAddingLocation] = useState(false);
+    const [isAddingName, setIsAddingName] = useState(false);
+    const [isAddingIp, setIsAddingIp] = useState(false);
+    const [isAddingExtension, setIsAddingExtension] = useState(false);
+    const [isAddingMobile, setIsAddingMobile] = useState(false);
+    const [isAddingJio, setIsAddingJio] = useState(false);
+    const [isAddingAirtel, setIsAddingAirtel] = useState(false);
+    const [isAddingIdea, setIsAddingIdea] = useState(false);
+    const [isAddingEmail, setIsAddingEmail] = useState(false);
+    const [isAddingExtensionOutside, setIsAddingExtensionOutside] = useState(false);
+    const [isAddingDepartment, setIsAddingDepartment] = useState(false);
+
+    // Refs for dropdown containers only
+    const locationDropdownRef = useRef(null);
+    const nameDropdownRef = useRef(null);
+    const ipDropdownRef = useRef(null);
+    const extensionDropdownRef = useRef(null);
+    const mobileDropdownRef = useRef(null);
+    const jioDropdownRef = useRef(null);
+    const airtelDropdownRef = useRef(null);
+    const ideaDropdownRef = useRef(null);
+    const emailDropdownRef = useRef(null);
+    const extensionOutsideDropdownRef = useRef(null);
+    const departmentDropdownRef = useRef(null);
+
+    // Click outside handlers for all dropdowns
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            const refs = [
+                { ref: locationDropdownRef, setter: setShowLocationDropdown },
+                { ref: nameDropdownRef, setter: setNameDropdown },
+                { ref: ipDropdownRef, setter: setShowIpDropdown },
+                { ref: extensionDropdownRef, setter: setShowExtensionDropdown },
+                { ref: mobileDropdownRef, setter: setShowMobileDropdown },
+                { ref: jioDropdownRef, setter: setShowJioDropdown },
+                { ref: airtelDropdownRef, setter: setShowAirtelDropdown },
+                { ref: ideaDropdownRef, setter: setShowIdeaDropdown },
+                { ref: emailDropdownRef, setter: setShowEmailDropdown },
+                { ref: extensionOutsideDropdownRef, setter: setShowExtensionOutsideDropdown },
+                { ref: departmentDropdownRef, setter: setShowDepartmentDropdown }
+            ];
+
+            refs.forEach(({ ref, setter }) => {
+                if (ref.current && !ref.current.contains(event.target)) {
+                    setter(false);
+                }
+            });
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     // Fetch all data from Master sheet
     const fetchMasterData = async () => {
@@ -79,7 +147,6 @@ export default function SystemForm() {
             const emails = [];
             const extensionOutside = [];
             const department = [];
-
 
             // Process all rows starting from index 1 (skip header)
             data.table.rows.slice(0).forEach((row) => {
@@ -152,8 +219,6 @@ export default function SystemForm() {
                     const value = row.c[11].v.toString().trim();
                     if (value !== "") department.push(value);
                 }
-
-
             });
 
             // Remove duplicates and set state
@@ -184,6 +249,8 @@ export default function SystemForm() {
             setAirtelOptions(["9876543210", "9876543211"]);
             setIdeaOptions(["9876543210", "9876543211"]);
             setEmailOptions(["user1@example.com", "user2@example.com"]);
+            setExtensionOutsideOptions(["2001", "2002"]);
+            setDepartmentOptions(["IT", "HR", "Finance"]);
         }
     };
 
@@ -205,7 +272,6 @@ export default function SystemForm() {
                 ? prev.filter(item => item !== system)
                 : [...prev, system];
 
-            // Update form data with selected systems
             setFormData(prevFormData => ({
                 ...prevFormData,
                 system: newSelectedSystems
@@ -215,12 +281,208 @@ export default function SystemForm() {
         });
     };
 
+    // Generic function to add new option to Master sheet
+    const addNewOptionToSheet = async (value, columnIndex, fieldName) => {
+        try {
+            const rowData = Array(12).fill("");
+            rowData[columnIndex] = value.trim();
+
+            const scriptUrl = "https://script.google.com/macros/s/AKfycbw-VcRnwXvGfYw6Avi5MgB0XvBYViPod0dDQkf8MDeNZsqto2_RzR6pJm5DpgO3zsd1/exec";
+
+            const params = {
+                sheetName: "Master",
+                action: "insert",
+                rowData: JSON.stringify(rowData)
+            };
+
+            const urlParams = new URLSearchParams();
+            for (const key in params) {
+                urlParams.append(key, params[key]);
+            }
+
+            const response = await fetch(scriptUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: urlParams
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || `Failed to add ${fieldName}`);
+            }
+
+            await fetchMasterData();
+            return true;
+        } catch (error) {
+            console.error(`Error adding ${fieldName}:`, error);
+            alert(`Failed to add ${fieldName}: ${error.message}`);
+            return false;
+        }
+    };
+
+    // Handler functions for adding new options with correct column indices
+    const handleAddNewLocation = async () => {
+        if (formData.location && formData.location.trim() !== "" &&
+            !locationOptions.includes(formData.location.trim())) {
+            setIsAddingLocation(true);
+            const success = await addNewOptionToSheet(formData.location.trim(), 7, "location"); // Column H
+            if (success) {
+                setFormData(prev => ({ ...prev, location: formData.location.trim() }));
+                alert(`Location "${formData.location.trim()}" added successfully!`);
+            }
+            setIsAddingLocation(false);
+            setShowLocationDropdown(false);
+        }
+    };
+
+    const handleAddNewName = async () => {
+        if (formData.name && formData.name.trim() !== "" &&
+            !nameOptions.includes(formData.name.trim())) {
+            setIsAddingName(true);
+            const success = await addNewOptionToSheet(formData.name.trim(), 6, "name"); // Column G
+            if (success) {
+                setFormData(prev => ({ ...prev, name: formData.name.trim() }));
+                alert(`Name "${formData.name.trim()}" added successfully!`);
+            }
+            setIsAddingName(false);
+            setNameDropdown(false);
+        }
+    };
+
+    const handleAddNewIp = async () => {
+        if (formData.ip && formData.ip.trim() !== "" &&
+            !ipOptions.includes(formData.ip.trim())) {
+            setIsAddingIp(true);
+            const success = await addNewOptionToSheet(formData.ip.trim(), 0, "IP"); // Column A
+            if (success) {
+                setFormData(prev => ({ ...prev, ip: formData.ip.trim() }));
+                alert(`IP "${formData.ip.trim()}" added successfully!`);
+            }
+            setIsAddingIp(false);
+            setShowIpDropdown(false);
+        }
+    };
+
+    const handleAddNewExtension = async () => {
+        if (formData.extension && formData.extension.trim() !== "" &&
+            !extensionOptions.includes(formData.extension.trim())) {
+            setIsAddingExtension(true);
+            const success = await addNewOptionToSheet(formData.extension.trim(), 8, "extension"); // Column I
+            if (success) {
+                setFormData(prev => ({ ...prev, extension: formData.extension.trim() }));
+                alert(`Extension "${formData.extension.trim()}" added successfully!`);
+            }
+            setIsAddingExtension(false);
+            setShowExtensionDropdown(false);
+        }
+    };
+
+    const handleAddNewMobile = async () => {
+        if (formData.mobile && formData.mobile.trim() !== "" &&
+            !mobileOptions.includes(formData.mobile.trim())) {
+            setIsAddingMobile(true);
+            const success = await addNewOptionToSheet(formData.mobile.trim(), 9, "mobile"); // Column J
+            if (success) {
+                setFormData(prev => ({ ...prev, mobile: formData.mobile.trim() }));
+                alert(`Mobile "${formData.mobile.trim()}" added successfully!`);
+            }
+            setIsAddingMobile(false);
+            setShowMobileDropdown(false);
+        }
+    };
+
+    const handleAddNewJio = async () => {
+        if (formData.jioNo && formData.jioNo.trim() !== "" &&
+            !jioOptions.includes(formData.jioNo.trim())) {
+            setIsAddingJio(true);
+            const success = await addNewOptionToSheet(formData.jioNo.trim(), 2, "Jio number"); // Column C
+            if (success) {
+                setFormData(prev => ({ ...prev, jioNo: formData.jioNo.trim() }));
+                alert(`Jio number "${formData.jioNo.trim()}" added successfully!`);
+            }
+            setIsAddingJio(false);
+            setShowJioDropdown(false);
+        }
+    };
+
+    const handleAddNewAirtel = async () => {
+        if (formData.airtelNo && formData.airtelNo.trim() !== "" &&
+            !airtelOptions.includes(formData.airtelNo.trim())) {
+            setIsAddingAirtel(true);
+            const success = await addNewOptionToSheet(formData.airtelNo.trim(), 4, "Airtel number"); // Column E
+            if (success) {
+                setFormData(prev => ({ ...prev, airtelNo: formData.airtelNo.trim() }));
+                alert(`Airtel number "${formData.airtelNo.trim()}" added successfully!`);
+            }
+            setIsAddingAirtel(false);
+            setShowAirtelDropdown(false);
+        }
+    };
+
+    const handleAddNewIdea = async () => {
+        if (formData.ideaNo && formData.ideaNo.trim() !== "" &&
+            !ideaOptions.includes(formData.ideaNo.trim())) {
+            setIsAddingIdea(true);
+            const success = await addNewOptionToSheet(formData.ideaNo.trim(), 3, "Idea number"); // Column D
+            if (success) {
+                setFormData(prev => ({ ...prev, ideaNo: formData.ideaNo.trim() }));
+                alert(`Idea number "${formData.ideaNo.trim()}" added successfully!`);
+            }
+            setIsAddingIdea(false);
+            setShowIdeaDropdown(false);
+        }
+    };
+
+    const handleAddNewEmail = async () => {
+        if (formData.email && formData.email.trim() !== "" &&
+            !emailOptions.includes(formData.email.trim())) {
+            setIsAddingEmail(true);
+            const success = await addNewOptionToSheet(formData.email.trim(), 1, "email"); // Column B
+            if (success) {
+                setFormData(prev => ({ ...prev, email: formData.email.trim() }));
+                alert(`Email "${formData.email.trim()}" added successfully!`);
+            }
+            setIsAddingEmail(false);
+            setShowEmailDropdown(false);
+        }
+    };
+
+    const handleAddNewExtensionOutside = async () => {
+        if (formData.extensionOutside && formData.extensionOutside.trim() !== "" &&
+            !extensionOutsideOptions.includes(formData.extensionOutside.trim())) {
+            setIsAddingExtensionOutside(true);
+            const success = await addNewOptionToSheet(formData.extensionOutside.trim(), 10, "extension outside"); // Column K
+            if (success) {
+                setFormData(prev => ({ ...prev, extensionOutside: formData.extensionOutside.trim() }));
+                alert(`Extension Outside "${formData.extensionOutside.trim()}" added successfully!`);
+            }
+            setIsAddingExtensionOutside(false);
+            setShowExtensionOutsideDropdown(false);
+        }
+    };
+
+    const handleAddNewDepartment = async () => {
+        if (formData.department && formData.department.trim() !== "" &&
+            !departmentOptions.includes(formData.department.trim())) {
+            setIsAddingDepartment(true);
+            const success = await addNewOptionToSheet(formData.department.trim(), 11, "department"); // Column L
+            if (success) {
+                setFormData(prev => ({ ...prev, department: formData.department.trim() }));
+                alert(`Department "${formData.department.trim()}" added successfully!`);
+            }
+            setIsAddingDepartment(false);
+            setShowDepartmentDropdown(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
-            // Prepare data for submission according to column mapping
             const submissionData = {
                 sheetName: "Data",
                 name: formData.name,
@@ -240,13 +502,11 @@ export default function SystemForm() {
 
             console.log("Submitting data:", submissionData);
 
-            // Build URL parameters
             const params = new URLSearchParams();
             Object.keys(submissionData).forEach(key => {
                 params.append(key, submissionData[key]);
             });
 
-            // Submit to Google Sheets using URL parameters
             const response = await fetch(
                 "https://script.google.com/macros/s/AKfycbw-VcRnwXvGfYw6Avi5MgB0XvBYViPod0dDQkf8MDeNZsqto2_RzR6pJm5DpgO3zsd1/exec",
                 {
@@ -263,7 +523,6 @@ export default function SystemForm() {
             if (result.success) {
                 alert("Data submitted successfully!");
 
-                // Reset form
                 setFormData({
                     name: "",
                     system: [],
@@ -291,29 +550,6 @@ export default function SystemForm() {
             setIsSubmitting(false);
         }
     };
-
-    // Simple Dropdown Component
-    const DropdownField = ({ id, name, value, options, onChange, label, placeholder }) => (
-        <div className="space-y-2">
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700">
-                {label}
-            </label>
-            <select
-                id={id}
-                name={name}
-                value={value}
-                onChange={onChange}
-                className="w-full rounded-md border border-gray-200 p-2 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
-            >
-                <option value="">{placeholder}</option>
-                {options.map((option, index) => (
-                    <option key={index} value={option}>
-                        {option}
-                    </option>
-                ))}
-            </select>
-        </div>
-    );
 
     // System Dropdown with Checkboxes Component
     const SystemDropdownWithCheckboxes = () => (
@@ -397,20 +633,99 @@ export default function SystemForm() {
                     <div className="p-6 space-y-6">
                         {/* Row 1: Name and System */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <DropdownField
-                                id="name"
-                                name="name"
-                                value={formData.name}
-                                options={nameOptions}
-                                onChange={handleChange}
-                                label="Name"
-                                placeholder="Select Name"
-                            />
+                            {/* Name Dropdown - Inline like CallTrackerForm */}
+                            <div className="space-y-2 relative" ref={nameDropdownRef}>
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                                    Name
+                                </label>
+
+                                <div className="relative">
+                                    <input
+                                        id="name"
+                                        name="name"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        onFocus={() => setNameDropdown(true)}
+                                        placeholder="Select or type name"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setNameDropdown(!showNameDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showNameDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {nameOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.name.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, name: option }));
+                                                        setNameDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.name && formData.name.trim() !== "" &&
+                                            !nameOptions.includes(formData.name.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewName}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingName ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.name.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new name</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {nameOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.name.toLowerCase())
+                                        ).length === 0 && formData.name && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
 
                             <SystemDropdownWithCheckboxes />
                         </div>
 
-                        {/* System Specs moved right after System dropdown */}
+                        {/* System Specs */}
                         <div className="space-y-2">
                             <label htmlFor="systemSpecs" className="block text-sm font-medium text-gray-700">
                                 System Specs
@@ -428,117 +743,912 @@ export default function SystemForm() {
 
                         {/* Row 2: IP and Location */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <DropdownField
-                                id="ip"
-                                name="ip"
-                                value={formData.ip}
-                                options={ipOptions}
-                                onChange={handleChange}
-                                label="IP"
-                                placeholder="Select IP"
-                            />
+                            {/* IP Dropdown */}
+                            <div className="space-y-2 relative" ref={ipDropdownRef}>
+                                <label htmlFor="ip" className="block text-sm font-medium text-gray-700">
+                                    IP
+                                </label>
 
-                            <DropdownField
-                                id="location"
-                                name="location"
-                                value={formData.location}
-                                options={locationOptions}
-                                onChange={handleChange}
-                                label="Location"
-                                placeholder="Select Location"
-                            />
+                                <div className="relative">
+                                    <input
+                                        id="ip"
+                                        name="ip"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.ip}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowIpDropdown(true)}
+                                        placeholder="Select or type IP"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowIpDropdown(!showIpDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showIpDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {ipOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.ip.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, ip: option }));
+                                                        setShowIpDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.ip && formData.ip.trim() !== "" &&
+                                            !ipOptions.includes(formData.ip.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewIp}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingIp ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.ip.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new IP</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {ipOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.ip.toLowerCase())
+                                        ).length === 0 && formData.ip && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Location Dropdown */}
+                            <div className="space-y-2 relative" ref={locationDropdownRef}>
+                                <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                                    Location
+                                </label>
+
+                                <div className="relative">
+                                    <input
+                                        id="location"
+                                        name="location"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.location}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowLocationDropdown(true)}
+                                        placeholder="Select or type location"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showLocationDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {locationOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.location.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, location: option }));
+                                                        setShowLocationDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.location && formData.location.trim() !== "" &&
+                                            !locationOptions.includes(formData.location.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewLocation}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingLocation ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.location.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new location</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {locationOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.location.toLowerCase())
+                                        ).length === 0 && formData.location && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
+                        {/* Continue this pattern for all other dropdown fields... */}
+                        {/* For brevity, I'll show the pattern for one more row */}
 
                         {/* Row 3: Extension and Mobile */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <DropdownField
-                                id="extension"
-                                name="extension"
-                                value={formData.extension}
-                                options={extensionOptions}
-                                onChange={handleChange}
-                                label="Extension"
-                                placeholder="Select Extension"
-                            />
+                            {/* Extension Dropdown */}
+                            <div className="space-y-2 relative" ref={extensionDropdownRef}>
+                                <label htmlFor="extension" className="block text-sm font-medium text-gray-700">
+                                    Extension
+                                </label>
 
-                            <DropdownField
-                                id="mobile"
-                                name="mobile"
-                                value={formData.mobile}
-                                options={mobileOptions}
-                                onChange={handleChange}
-                                label="Mobile"
-                                placeholder="Select Mobile"
-                            />
+                                <div className="relative">
+                                    <input
+                                        id="extension"
+                                        name="extension"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.extension}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowExtensionDropdown(true)}
+                                        placeholder="Select or type extension"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowExtensionDropdown(!showExtensionDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showExtensionDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {extensionOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.extension.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, extension: option }));
+                                                        setShowExtensionDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.extension && formData.extension.trim() !== "" &&
+                                            !extensionOptions.includes(formData.extension.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewExtension}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingExtension ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.extension.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new extension</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {extensionOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.extension.toLowerCase())
+                                        ).length === 0 && formData.extension && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Mobile Dropdown */}
+                            <div className="space-y-2 relative" ref={mobileDropdownRef}>
+                                <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">
+                                    Mobile
+                                </label>
+
+                                <div className="relative">
+                                    <input
+                                        id="mobile"
+                                        name="mobile"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.mobile}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowMobileDropdown(true)}
+                                        placeholder="Select or type mobile"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMobileDropdown(!showMobileDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showMobileDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {mobileOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.mobile.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, mobile: option }));
+                                                        setShowMobileDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.mobile && formData.mobile.trim() !== "" &&
+                                            !mobileOptions.includes(formData.mobile.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewMobile}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingMobile ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.mobile.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new mobile</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {mobileOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.mobile.toLowerCase())
+                                        ).length === 0 && formData.mobile && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
+                        {/* Extension Outside and Department */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <DropdownField
-                                id="extensionOutside"
-                                name="extensionOutside"
-                                value={formData.extensionOutside}
-                                options={extensionOutsideOptions}
-                                onChange={handleChange}
-                                label="Extension Outside"
-                                placeholder="Select Outside Extension"
-                            />
+                            {/* Extension Outside Dropdown */}
+                            <div className="space-y-2 relative" ref={extensionOutsideDropdownRef}>
+                                <label htmlFor="extensionOutside" className="block text-sm font-medium text-gray-700">
+                                    Extension Outside
+                                </label>
 
-                            <DropdownField
-                                id="department"
-                                name="department"
-                                value={formData.department}
-                                options={departmentOptions}
-                                onChange={handleChange}
-                                label="Department"
-                                placeholder="Select Department"
-                            />
+                                <div className="relative">
+                                    <input
+                                        id="extensionOutside"
+                                        name="extensionOutside"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.extensionOutside}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowExtensionOutsideDropdown(true)}
+                                        placeholder="Select or type outside extension"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowExtensionOutsideDropdown(!showExtensionOutsideDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showExtensionOutsideDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {extensionOutsideOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.extensionOutside.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, extensionOutside: option }));
+                                                        setShowExtensionOutsideDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.extensionOutside && formData.extensionOutside.trim() !== "" &&
+                                            !extensionOutsideOptions.includes(formData.extensionOutside.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewExtensionOutside}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingExtensionOutside ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.extensionOutside.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new extension outside</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {extensionOutsideOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.extensionOutside.toLowerCase())
+                                        ).length === 0 && formData.extensionOutside && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Department Dropdown */}
+                            <div className="space-y-2 relative" ref={departmentDropdownRef}>
+                                <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                                    Department
+                                </label>
+
+                                <div className="relative">
+                                    <input
+                                        id="department"
+                                        name="department"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.department}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowDepartmentDropdown(true)}
+                                        placeholder="Select or type department"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDepartmentDropdown(!showDepartmentDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showDepartmentDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {departmentOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.department.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, department: option }));
+                                                        setShowDepartmentDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.department && formData.department.trim() !== "" &&
+                                            !departmentOptions.includes(formData.department.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewDepartment}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingDepartment ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.department.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new department</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {departmentOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.department.toLowerCase())
+                                        ).length === 0 && formData.department && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Row 4: Jio No. and Airtel No. */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <DropdownField
-                                id="jioNo"
-                                name="jioNo"
-                                value={formData.jioNo}
-                                options={jioOptions}
-                                onChange={handleChange}
-                                label="Jio Number"
-                                placeholder="Select Jio Number"
-                            />
+                            {/* Jio No Dropdown */}
+                            <div className="space-y-2 relative" ref={jioDropdownRef}>
+                                <label htmlFor="jioNo" className="block text-sm font-medium text-gray-700">
+                                    Jio Number
+                                </label>
 
-                            <DropdownField
-                                id="airtelNo"
-                                name="airtelNo"
-                                value={formData.airtelNo}
-                                options={airtelOptions}
-                                onChange={handleChange}
-                                label="Airtel No"
-                                placeholder="Select Airtel Number"
-                            />
+                                <div className="relative">
+                                    <input
+                                        id="jioNo"
+                                        name="jioNo"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.jioNo}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowJioDropdown(true)}
+                                        placeholder="Select or type Jio number"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowJioDropdown(!showJioDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showJioDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {jioOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.jioNo.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, jioNo: option }));
+                                                        setShowJioDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.jioNo && formData.jioNo.trim() !== "" &&
+                                            !jioOptions.includes(formData.jioNo.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewJio}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingJio ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.jioNo.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new Jio number</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {jioOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.jioNo.toLowerCase())
+                                        ).length === 0 && formData.jioNo && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Airtel No Dropdown */}
+                            <div className="space-y-2 relative" ref={airtelDropdownRef}>
+                                <label htmlFor="airtelNo" className="block text-sm font-medium text-gray-700">
+                                    Airtel No
+                                </label>
+
+                                <div className="relative">
+                                    <input
+                                        id="airtelNo"
+                                        name="airtelNo"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.airtelNo}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowAirtelDropdown(true)}
+                                        placeholder="Select or type Airtel number"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAirtelDropdown(!showAirtelDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showAirtelDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {airtelOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.airtelNo.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, airtelNo: option }));
+                                                        setShowAirtelDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.airtelNo && formData.airtelNo.trim() !== "" &&
+                                            !airtelOptions.includes(formData.airtelNo.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewAirtel}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingAirtel ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.airtelNo.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new Airtel number</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {airtelOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.airtelNo.toLowerCase())
+                                        ).length === 0 && formData.airtelNo && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Row 5: Idea No. and Email */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <DropdownField
-                                id="ideaNo"
-                                name="ideaNo"
-                                value={formData.ideaNo}
-                                options={ideaOptions}
-                                onChange={handleChange}
-                                label="Idea No"
-                                placeholder="Select Idea Number"
-                            />
+                            {/* Idea No Dropdown */}
+                            <div className="space-y-2 relative" ref={ideaDropdownRef}>
+                                <label htmlFor="ideaNo" className="block text-sm font-medium text-gray-700">
+                                    Idea No
+                                </label>
 
-                            <DropdownField
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                options={emailOptions}
-                                onChange={handleChange}
-                                label="Email"
-                                placeholder="Select Email"
-                            />
+                                <div className="relative">
+                                    <input
+                                        id="ideaNo"
+                                        name="ideaNo"
+                                        type="text"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.ideaNo}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowIdeaDropdown(true)}
+                                        placeholder="Select or type Idea number"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowIdeaDropdown(!showIdeaDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showIdeaDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {ideaOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.ideaNo.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, ideaNo: option }));
+                                                        setShowIdeaDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.ideaNo && formData.ideaNo.trim() !== "" &&
+                                            !ideaOptions.includes(formData.ideaNo.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewIdea}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingIdea ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.ideaNo.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new Idea number</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {ideaOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.ideaNo.toLowerCase())
+                                        ).length === 0 && formData.ideaNo && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Email Dropdown */}
+                            <div className="space-y-2 relative" ref={emailDropdownRef}>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                    Email
+                                </label>
+
+                                <div className="relative">
+                                    <input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        onFocus={() => setShowEmailDropdown(true)}
+                                        placeholder="Select or type email"
+                                    // required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEmailDropdown(!showEmailDropdown)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {showEmailDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                        {emailOptions
+                                            .filter(option =>
+                                                option.toLowerCase().includes(formData.email.toLowerCase())
+                                            )
+                                            .map((option, index) => (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, email: option }));
+                                                        setShowEmailDropdown(false);
+                                                    }}
+                                                    className="px-4 py-3 hover:bg-gray-50 active:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                >
+                                                    <span className="text-sm text-gray-700">{option}</span>
+                                                </div>
+                                            ))
+                                        }
+
+                                        {formData.email && formData.email.trim() !== "" &&
+                                            !emailOptions.includes(formData.email.trim()) && (
+                                                <div
+                                                    onClick={handleAddNewEmail}
+                                                    className="px-4 py-3 hover:bg-blue-50 active:bg-blue-100 cursor-pointer text-blue-600 border-t border-gray-200 flex items-center"
+                                                >
+                                                    {isAddingEmail ? (
+                                                        <div className="flex items-center justify-center w-full py-2">
+                                                            <svg className="animate-spin mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span className="text-sm font-medium">Adding...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium">Add "{formData.email.trim()}"</p>
+                                                                <p className="text-xs text-blue-500 mt-1">Create new email</p>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                        {emailOptions.filter(option =>
+                                            option.toLowerCase().includes(formData.email.toLowerCase())
+                                        ).length === 0 && formData.email && (
+                                                <div className="px-4 py-3 text-center text-gray-500 text-sm">
+                                                    No options found
+                                                </div>
+                                            )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
                     </div>
 
                     <div className="flex justify-between bg-gradient-to-r from-gray-50 to-blue-50 p-6 border-t border-gray-100">
@@ -556,7 +1666,9 @@ export default function SystemForm() {
                                     jioNo: "",
                                     airtelNo: "",
                                     ideaNo: "",
-                                    email: ""
+                                    email: "",
+                                    extensionOutside: "",
+                                    department: ""
                                 });
                                 setSelectedSystems([]);
                             }}
