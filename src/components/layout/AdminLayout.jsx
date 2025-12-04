@@ -325,7 +325,7 @@ export default function AdminLayout({ children }) {
     { id: "housekeeping", label: "HouseKeeping", url: "https://housekeeping-frontend-aws.vercel.app/login" },
     { id: "maintenance", label: "Maintenance", url: "https://maintenance-frontend-production.vercel.app/" },
     { id: "repair", label: "Repair", url: "" },
-    { id: "store", label: "Store", url: "http://storepurches.sagartmt.com.s3-website.ap-south-1.amazonaws.com/", active: true },
+    { id: "store", label: "Store", url: "https://store-frontend-vercel.vercel.app/" },
     { id: "subscription", label: "Subscription", url: "https://subscription-fms-nu.vercel.app" },
     { id: "document", label: "Document", url: "https://document-manager-beta.vercel.app/" },
     { id: "orderToDelivery", label: "Order To Delivery", url: "" },
