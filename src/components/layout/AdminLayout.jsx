@@ -317,16 +317,17 @@ export default function AdminLayout({ children }) {
   const [currentUrl, setCurrentUrl] = useState("")
   const [isIframeVisible, setIsIframeVisible] = useState(false)
   const [showUnderConstruction, setShowUnderConstruction] = useState(false)
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
   const topNavRoutes = [
     { id: "home", label: "Home", url: "" },
-    { id: "checkilst", label: "Checklist", url: "https://checklist-delegation-eight.vercel.app/login" },
+    { id: "checkilst", label: "Checklist", url: "https://checklist-frontend-aws.vercel.app/login" },
     { id: "leadToOrder", label: "Lead To Order", url: "https://lead-to-order.vercel.app/" },
     { id: "housekeeping", label: "HouseKeeping", url: "https://housekeeping-frontend-aws.vercel.app/login" },
     { id: "maintenance", label: "Maintenance", url: "https://maintenance-frontend-production.vercel.app/" },
-    { id: "repair", label: "Repair", url: "" },
+    { id: "repair", label: "Repair", url: "https://repair-system-frontend-production.vercel.app/" },
     { id: "store", label: "Store", url: "https://store-frontend-vercel.vercel.app/" },
-    { id: "subscription", label: "Subscription", url: "https://subscription-fms-nu.vercel.app" },
+    { id: "subscription", label: "Subscription", url: "https://subscription-frontend-aws.vercel.app/" },
     { id: "document", label: "Document", url: "https://document-manager-beta.vercel.app/" },
     { id: "orderToDelivery", label: "Order To Delivery", url: "" },
     { id: "project", label: "Project", url: "" },
@@ -400,9 +401,28 @@ export default function AdminLayout({ children }) {
     }
   }, [activeRoute]);
 
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      if (window.scrollY > lastScrollY) {
+        setIsHeaderVisible(false); // Hide header on scroll down
+      } else {
+        setIsHeaderVisible(true); // Show header on scroll up
+      }
+      lastScrollY = window.scrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <header
+        className={`bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300 ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"
+          }`}
+      >
         <div className="flex items-center justify-between px-4 py-3">
           {/* Logo with floating animation */}
           <div className="flex items-center">
@@ -456,9 +476,10 @@ export default function AdminLayout({ children }) {
               </span>
             </div>
           </div>
+        </div>
 
-          {/* CSS animations */}
-          <style jsx>{`
+        {/* CSS animations */}
+        <style jsx>{`
       @keyframes logoFloat {
         0% {
           transform: translateX(-100px) translateY(-100px) rotate(-20deg);
@@ -529,7 +550,6 @@ export default function AdminLayout({ children }) {
         }
       }
     `}</style>
-        </div>
       </header>
 
       {/* Top Navigation Bar - Red Gradient Style */}
