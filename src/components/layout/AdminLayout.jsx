@@ -36,12 +36,12 @@ function HomePage() {
     {
       image: "/Squarepipe.png",
       title: "Sagar Pipes",
-      description: "A Product By Pankaj Group"
+      description: ""
     },
     {
       image: "/Billet.png",
       title: "Sagar Billet",
-      description: "A Product By Pankaj Group"
+      description: ""
     }
   ]
 
@@ -55,7 +55,7 @@ function HomePage() {
   return (
     <div className="w-full">
       {/* Hero Slider */}
-      <div className="relative w-full h-[400px] md:h-[600px] overflow-hidden">
+      {/* <div className="relative w-full h-[400px] md:h-[600px] overflow-hidden">
         {slides.map((slide, index) => (
           <div
             key={index}
@@ -82,7 +82,7 @@ function HomePage() {
           </div>
         ))}
 
-        {/* Slider Indicators */}
+        {/* Slider Indicators
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {slides.map((_, index) => (
             <button
@@ -93,7 +93,7 @@ function HomePage() {
             />
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* About Us Section */}
       <section className="py-12 md:py-20 bg-white">
@@ -114,12 +114,12 @@ function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             <div className="text-center p-6 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg shadow-md">
               <Target className="w-16 h-16 mx-auto text-red-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-800 mb-3">Our Mission</h3>
               <p className="text-gray-600">
-                Our emphasis on innovation, sustainability, and quality drives our mission to contribute to nation-building and foster self-reliance in India.
+                Mission creating happiness through achievements
               </p>
             </div>
 
@@ -127,23 +127,17 @@ function HomePage() {
               <Award className="w-16 h-16 mx-auto text-blue-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-800 mb-3">Our Vision</h3>
               <p className="text-gray-600">
-                Under the visionary leadership of Mr. Pankaj Agrawal & Mr. Akash Agrawal Sourabh Rolling Mills continues to uphold the core values of Pankaj Group.
+                Vision becoming a humble man with high values and creative mind set.
               </p>
             </div>
 
-            <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg shadow-md">
-              <Users className="w-16 h-16 mx-auto text-green-600 mb-4" />
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Our Values</h3>
-              <p className="text-gray-600">
-                The plant is designed with a focus on sustainability and a better work environment. With greenery both inside and outside the campus, Sourabh Rolling Mills creates a serene and eco-friendly atmosphere for all employees.
-              </p>
-            </div>
+
           </div>
         </div>
       </section>
 
       {/* Purpose Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* <section className="py-12 md:py-20 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container mx-auto px-4 md:px-8">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-gray-800 mb-12">
             Our Purpose
@@ -220,44 +214,12 @@ function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-12 md:py-20 bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-
         <div className="container mx-auto px-4 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-            {/* Company Info */}
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold mb-4 text-red-500">Sagar Pipe</h3>
-              {/* <p className="text-gray-300 mb-4">
-                Streamlining operations and helping businesses achieve their goals.
-              </p> */}
-              <div className="flex justify-center md:justify-start space-x-4">
-                {/* Social Media Icons */}
-                <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.213c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-                  </svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.441 16.892c-2.102.144-6.784.144-8.883 0C5.279 16.736 5.018 15.622 5 12c.018-3.629.285-4.736 2.558-4.892 2.099-.144 6.782-.144 8.883 0C18.718 7.264 18.982 8.378 19 12c-.018 3.629-.285 4.736-2.559 4.892zM10 9.658l4.917 2.338L10 14.342V9.658z" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-
             {/* Contact Info */}
             <div className="text-center md:text-left">
               <h4 className="text-xl font-semibold mb-4 text-red-400">Contact Us</h4>
@@ -266,21 +228,39 @@ function HomePage() {
                   <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  <span className="text-gray-300">+918839494655</span>
+                  <span className="text-gray-300">+917225061350 , </span>
+                  <span className="text-gray-300">+919907455225</span>
                 </div>
                 <div className="flex items-center justify-center md:justify-start">
                   <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-gray-300">sourabhshakti@yahoo.co.in</span>
+                  <span className="text-gray-300">admin@sagartmt.com</span>
                 </div>
                 <div className="flex items-center justify-center md:justify-start">
                   <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span className="text-gray-300">Achholi Road Kanhera Urla Industrial Area<br />Raipur C.G.</span>
+                  <span className="text-gray-300">Achholi Road Kanhera , Urla Industrial Area<br />Raipur C.G.</span>
                 </div>
+              </div>
+
+            </div>
+            {/* Google Map Embed */}
+            <div className="">
+              <h5 className="text-lg font-medium mb-4 text-red-400">Our Location</h5>
+              <div className="w-full h-48 md:h-64 lg:h-48">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d529.0000000000001!2d81.6093303!3d21.3333512!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a28e700143df22d%3A0x89321ea274817173!2sSourabh%20Rolling%20Mill%20Pvt.%20Ltd.!5e0!3m2!1sen!2sin!4v1690000000000!5m2!1sen!2sin"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Google Map Location"
+                ></iframe>
               </div>
             </div>
 
@@ -321,15 +301,15 @@ export default function AdminLayout({ children }) {
 
   const topNavRoutes = [
     { id: "home", label: "Home", url: "" },
-    { id: "checkilst", label: "Checklist", url: "https://checklist-frontend-aws.vercel.app/login" },
+    { id: "checkilst", label: "Checklist", url: "https://checklist-delegation-eight.vercel.app/" },
     { id: "leadToOrder", label: "Lead To Order", url: "https://lead-to-order.vercel.app/" },
     { id: "housekeeping", label: "HouseKeeping", url: "https://housekeeping-frontend-aws.vercel.app/login" },
     { id: "maintenance", label: "Maintenance", url: "https://maintenance-frontend-production.vercel.app/" },
     { id: "repair", label: "Repair", url: "https://repair-system-frontend-production.vercel.app/" },
     { id: "store", label: "Store", url: "https://store-frontend-vercel.vercel.app/" },
-    { id: "subscription", label: "Subscription", url: "https://subscription-frontend-aws.vercel.app/" },
+    { id: "subscription", label: "Subscription", url: "https://subscription-frontend-aws-c7dd.vercel.app/" },
     { id: "document", label: "Document", url: "https://document-manager-beta.vercel.app/" },
-    { id: "orderToDelivery", label: "Order To Delivery", url: "" },
+    { id: "orderToDelivery", label: "Order To Delivery", url: "https://o2-d-system-frontend-aws-nsa4.vercel.app/" },
     { id: "project", label: "Project", url: "" },
     { id: "batchCode", label: "Batch Code", url: "" },
     { id: "allPayment", label: "All Payment", url: "" },
@@ -429,7 +409,7 @@ export default function AdminLayout({ children }) {
             <div
               className="flex items-center"
               style={{
-                animation: 'logoFloat 2s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                // animation: 'logoFloat 2s cubic-bezier(0.4, 0, 0.2, 1) forwards',
                 willChange: 'transform'
               }}
             >
@@ -457,10 +437,10 @@ export default function AdminLayout({ children }) {
                   animation: 'waveHand 1.5s ease-in-out 2.5s'
                 }}
               >
-                👋
+
               </span>
               <span className="text-gray-700 font-medium text-sm">
-                AAKASH
+                Welcome , Aakash
               </span>
             </div>
 
@@ -564,9 +544,6 @@ export default function AdminLayout({ children }) {
               {route.label}
             </button>
           ))}
-          <button className="px-4 py-3 text-xl hover:bg-white/20 border-r border-white/10 font-bold">
-            ❯
-          </button>
         </div>
       </nav>
 
