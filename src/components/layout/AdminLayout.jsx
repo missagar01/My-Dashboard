@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { LogOut, Search, Menu, X, ChevronDown, Bookmark, Code, GraduationCap, Award, Construction, Users, Target, Briefcase, TrendingUp, CheckCircle } from 'lucide-react'
+import { LogOut, Search, Hash, Menu, X, ChevronDown, Bookmark, Code, GraduationCap, Award, Construction, Users, Target, Briefcase, TrendingUp, CheckCircle, ChevronRight, Home, ListCheck, ShoppingCart, Home as HomeIcon, Wrench, HardHat, Package, FileText, Truck, ClipboardCheck, Calendar, Gift, Plane, Cake, TrendingUp as TrendingUpIcon, DollarSign, Users as UsersIcon, Building, Grid, Settings, User, Bell, MessageSquare } from 'lucide-react'
 
 // Under Construction Component
 function UnderConstruction() {
@@ -25,77 +25,8 @@ function UnderConstruction() {
 
 // Home Page Component
 function HomePage() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-
-  const slides = [
-    {
-      image: "/SourabhRollingMills2.png",
-      title: "Welcome to Sourabh Rolling Mill",
-      description: "मजबूती  और विश्वास का नया नाम"
-    },
-    {
-      image: "/Squarepipe.png",
-      title: "Sagar Pipes",
-      description: ""
-    },
-    {
-      image: "/Billet.png",
-      title: "Sagar Billet",
-      description: ""
-    }
-  ]
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
-
   return (
     <div className="w-full">
-      {/* Hero Slider */}
-      {/* <div className="relative w-full h-[400px] md:h-[600px] overflow-hidden">
-        {slides.map((slide, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-          >
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center">
-              <div className="container mx-auto px-4 md:px-8">
-                <div className="max-w-2xl text-white">
-                  <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 animate-fade-in">
-                    {slide.title}
-                  </h1>
-                  <p className="text-lg md:text-xl lg:text-2xl animate-fade-in delay-100">
-                    {slide.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Slider Indicators
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
-                }`}
-            />
-          ))}
-        </div>
-      </div> */}
-
-      {/* About Us Section */}
       <section className="py-12 md:py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="max-w-4xl mx-auto text-center mb-12">
@@ -130,97 +61,13 @@ function HomePage() {
                 Vision becoming a humble man with high values and creative mind set.
               </p>
             </div>
-
-
           </div>
         </div>
       </section>
 
-      {/* Purpose Section */}
-      {/* <section className="py-12 md:py-20 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="container mx-auto px-4 md:px-8">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-gray-800 mb-12">
-            Our Purpose
-          </h2>
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white p-8 rounded-lg shadow-lg">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-red-600" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Simplify Operations</h3>
-                    <p className="text-gray-600">
-                      We eliminate complexity by providing integrated solutions that bring
-                      all your business processes under one roof.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-8 rounded-lg shadow-lg">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Drive Growth</h3>
-                    <p className="text-gray-600">
-                      Our platform provides actionable insights and automation that help
-                      you scale your business efficiently.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-8 rounded-lg shadow-lg">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <Users className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Enhance Collaboration</h3>
-                    <p className="text-gray-600">
-                      Foster seamless teamwork with tools designed to keep everyone
-                      connected and aligned.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-8 rounded-lg shadow-lg">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <Briefcase className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Ensure Reliability</h3>
-                    <p className="text-gray-600">
-                      Count on enterprise-grade security, uptime, and support that keeps
-                      your business running 24/7.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section> */}
-
-      {/* CTA Section */}
       <section className="py-12 md:py-20 bg-gradient-to-br from-gray-800 to-gray-900 text-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-            {/* Contact Info */}
             <div className="text-center md:text-left">
               <h4 className="text-xl font-semibold mb-4 text-red-400">Contact Us</h4>
               <div className="space-y-3">
@@ -229,7 +76,7 @@ function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   <span className="text-gray-300">+917225061350 , </span>
-                  <span className="text-gray-300">+919907455225</span>
+                  <span className="text-gray-300">+918839494655</span>
                 </div>
                 <div className="flex items-center justify-center md:justify-start">
                   <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,9 +92,7 @@ function HomePage() {
                   <span className="text-gray-300">Achholi Road Kanhera , Urla Industrial Area<br />Raipur C.G.</span>
                 </div>
               </div>
-
             </div>
-            {/* Google Map Embed */}
             <div className="">
               <h5 className="text-lg font-medium mb-4 text-red-400">Our Location</h5>
               <div className="w-full h-48 md:h-64 lg:h-48">
@@ -263,13 +108,10 @@ function HomePage() {
                 ></iframe>
               </div>
             </div>
-
           </div>
 
-          {/* Divider */}
           <div className="border-t border-gray-700 my-8"></div>
 
-          {/* Copyright */}
           <div className="text-center">
             <p className="text-gray-400">
               &copy; {new Date().getFullYear()} Sagar Pipe. All rights reserved.
@@ -280,100 +122,241 @@ function HomePage() {
                 Botivate
               </a>
             </p>
-
           </div>
         </div>
-
       </section>
     </div>
   )
 }
 
+// Horizontal SubNav Component
+function HorizontalSubNav({
+  activeModule,
+  onSubTabClick,
+  activeSubTab,
+  sidebarConfig
+}) {
+  if (!activeModule || !sidebarConfig[activeModule]?.subtabs?.length) return null;
+
+  const subtabs = sidebarConfig[activeModule].subtabs;
+
+  return (
+    <nav className="text-black sticky top-[120px] md:top-[120px] z-30 shadow-md">
+      <div className="flex items-center overflow-x-auto scrollbar-thin px-2">
+        {subtabs.map((subtab) => (
+          <button
+            key={subtab.id}
+            onClick={() => onSubTabClick(subtab.url, subtab.id)}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap hover:bg-white/10 transition-all border-r border-white/10 ${activeSubTab === subtab.id
+              ? "bg-gradient-to-r from-orange-200 to-red-200 shadow-lg rounded-lg"
+              : ""
+              }`}
+          >
+            {subtab.icon && <subtab.icon className="h-4 w-4" />}
+            <span>{subtab.label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 export default function AdminLayout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeRoute, setActiveRoute] = useState("home")
-  const [activeSidebar, setActiveSidebar] = useState("home")
-  const [username] = useState("Admin User")
+  const [activeModule, setActiveModule] = useState(null)
+  const [activeSubTab, setActiveSubTab] = useState(null)
   const [currentUrl, setCurrentUrl] = useState("")
   const [isIframeVisible, setIsIframeVisible] = useState(false)
   const [showUnderConstruction, setShowUnderConstruction] = useState(false)
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true)
+
+  // Define sidebar configurations
+  const sidebarConfig = {
+    home: {
+      // titl e: "Home",
+      icon: HomeIcon,
+      subtabs: []
+    },
+    salesSystem: {
+      title: "Sales Systems",
+      subtabs: [
+        { id: "o2d", label: "Order To Delivery", url: "https://o2-d-system-frontend-aws-nsa4.vercel.app/" },
+        { id: "enquiryManagement", label: "Enquiry Management", url: "https://lead-to-order.vercel.app/" },
+        { id: "batchCode", label: "Batch Code", url: "" },
+      ]
+    },
+    checklistTasks: {
+      title: "Checklist Tasks",
+      subtabs: [
+        { id: "checklist", label: "Checklist", url: "https://checklist-delegation-eight.vercel.app/" },
+        { id: "maintenance", label: "Maintenance", url: "https://maintenance-frontend-production.vercel.app/" },
+        { id: "HouseKeeping", label: "HouseKeeping", url: "https://housekeeping-frontend-aws.vercel.app/" },
+      ]
+    },
+    storePurchase: {
+      title: "Store Purchase",
+      subtabs: [
+        { id: "hk-dashboard", label: "Store", url: "https://store-frontend-vercel.vercel.app/" },
+        { id: "hk-tasks", label: "Repair", url: "https://repair-system-frontend-production.vercel.app/" },
+      ]
+    },
+    allAccountSystem: {
+      title: "All Accounts System",
+      subtabs: [
+        { id: "subscription", label: "Subscription", url: "https://subscription-frontend-aws-c7dd.vercel.app/" },
+        { id: "document", label: "Document Manager", url: "https://document-manager-beta.vercel.app/" },
+        { id: "finance", label: "Finance Dashboard", url: "" },
+        { id: "freight", label: "Freight Management", url: "" },
+        { id: "allPayment", label: "All Payment System", url: "" },
+        { id: "account", label: "Account FMS", url: "" }
+      ]
+    },
+    hrSystem: {
+      title: "HR System",
+      subtabs: [
+        { id: "hrSystem", label: "HR System", url: "" },
+        { id: "travel", label: "Travel", url: "" },
+        { id: "birthdayWishes", label: "Birthday Wishes", url: "" },
+      ]
+    },
+    project: {
+      title: "Project Management",
+      subtabs: [
+        { id: "12weekPlan", label: "12 Week Plan", url: "https://dashboard-sagar.vercel.app/" },
+      ]
+    },
+    logistic: {
+      title: "Travel Management",
+      subtabs: [
+        { id: "dispatch", label: "Dispatch", url: "" },
+        { id: "getOut", label: "Get Out", url: "" },
+
+      ]
+    },
+
+  };
 
   const topNavRoutes = [
-    { id: "home", label: "Home", url: "" },
-    { id: "checkilst", label: "Checklist", url: "https://checklist-delegation-eight.vercel.app/" },
-    { id: "leadToOrder", label: "Lead To Order", url: "https://lead-to-order.vercel.app/" },
-    { id: "housekeeping", label: "HouseKeeping", url: "https://housekeeping-frontend-aws.vercel.app/login" },
-    { id: "maintenance", label: "Maintenance", url: "https://maintenance-frontend-production.vercel.app/" },
-    { id: "repair", label: "Repair", url: "https://repair-system-frontend-production.vercel.app/" },
-    { id: "store", label: "Store", url: "https://store-frontend-vercel.vercel.app/" },
-    { id: "subscription", label: "Subscription", url: "https://subscription-frontend-aws-c7dd.vercel.app/" },
-    { id: "document", label: "Document", url: "https://document-manager-beta.vercel.app/" },
-    { id: "orderToDelivery", label: "Order To Delivery", url: "https://o2-d-system-frontend-aws-nsa4.vercel.app/" },
-    { id: "project", label: "Project", url: "" },
-    { id: "batchCode", label: "Batch Code", url: "" },
-    { id: "allPayment", label: "All Payment", url: "" },
-    { id: "accountChecklist", label: "Account Checklist", url: "" },
-    { id: "financial", label: "Financial", url: "" },
-    { id: "freight", label: "Freight FMS", url: "" },
-    { id: "travel", label: "Travel", url: "" },
-    { id: "birthdayGreeting", label: "Birthday Greeting", url: "" },
-    { id: "12week", label: "12 Week Plan", url: "" },
+    { id: "home", label: "Home", url: "", icon: Home },
+    { id: "salesSystem", label: "Sales Systems", url: "https://o2-d-system-frontend-aws-nsa4.vercel.app/" },
+    { id: "checklistTasks", label: "Checklist Tasks", url: "https://checklist-delegation-eight.vercel.app/" },
+    { id: "storePurchase", label: "Store Purchase Systems", url: "https://store-frontend-vercel.vercel.app/" },
+    { id: "allAccountSystem", label: "All Accounts Systems", url: "https://subscription-frontend-aws-c7dd.vercel.app/", },
+    { id: "hrSystem", label: "HR Systems", url: "" },
+    { id: "project", label: "Project Systems", url: "" },
+    { id: "logistic", label: "logistic Systems", url: "" },
   ]
 
-  // Function to handle route click
-  const handleRouteClick = (url, id) => {
+  // Function to handle top tab click
+  const handleTopTabClick = (id) => {
     setActiveRoute(id)
 
-    // If it's the home route
     if (id === "home") {
       setIsIframeVisible(false)
       setShowUnderConstruction(false)
       setCurrentUrl("")
+      setActiveModule(null)
+      setActiveSubTab(null)
       return
     }
 
-    // If URL is empty, show under construction
+    if (id === "menu") {
+      setIsMobileMenuOpen(!isMobileMenuOpen)
+      return
+    }
+
+    // Check if module has subtabs configured
+    const moduleHasSubtabs = sidebarConfig[id]?.subtabs?.length > 0;
+
+    if (moduleHasSubtabs) {
+      // Set active module for horizontal subnav
+      setActiveModule(id)
+
+      // Show under construction if no URL is set for the first subtab
+      const firstSubtab = sidebarConfig[id].subtabs[0];
+      if (!firstSubtab.url || firstSubtab.url.trim() === "") {
+        setShowUnderConstruction(true)
+        setIsIframeVisible(false)
+        setCurrentUrl("")
+        setActiveSubTab(firstSubtab.id)
+      } else {
+        // Load first subtab by default
+        handleSubTabClick(firstSubtab.url, firstSubtab.id)
+      }
+    } else {
+      // For modules without subtabs, check if they have a direct URL
+      const route = topNavRoutes.find(r => r.id === id);
+      if (route) {
+        if (!route.url || route.url.trim() === "") {
+          setShowUnderConstruction(true)
+          setIsIframeVisible(false)
+          setCurrentUrl("")
+        } else {
+          setCurrentUrl(route.url)
+          setIsIframeVisible(true)
+          setShowUnderConstruction(false)
+        }
+        setActiveModule(null)
+        setActiveSubTab(null)
+      }
+    }
+  }
+
+  // Function to handle subtab click
+  const handleSubTabClick = (url, subtabId) => {
+    setActiveSubTab(subtabId)
+
     if (!url || url.trim() === "") {
       setShowUnderConstruction(true)
       setIsIframeVisible(false)
       setCurrentUrl("")
     } else {
-      // If URL exists, show iframe
       setCurrentUrl(url)
       setIsIframeVisible(true)
       setShowUnderConstruction(false)
     }
+
+    // Close mobile menu after selection
+    if (window.innerWidth < 1024) {
+      setIsMobileMenuOpen(false)
+    }
   }
 
   useEffect(() => {
-    // Retrieve saved state from localStorage on component mount
     const savedRoute = localStorage.getItem("activeRoute");
     const savedUrl = localStorage.getItem("currentUrl");
+    const savedModule = localStorage.getItem("activeModule");
+    const savedSubTab = localStorage.getItem("activeSubTab");
 
     if (savedRoute) {
       setActiveRoute(savedRoute);
+      if (savedModule && sidebarConfig[savedModule]) {
+        setActiveModule(savedModule);
+        if (savedSubTab) {
+          setActiveSubTab(savedSubTab);
+        }
+      }
     }
 
     if (savedUrl) {
       setCurrentUrl(savedUrl);
-      setIsIframeVisible(!!savedUrl); // Show iframe if URL exists
+      setIsIframeVisible(!!savedUrl);
     }
   }, []);
 
   useEffect(() => {
-    // Save active route and URL to localStorage whenever they change
     localStorage.setItem("activeRoute", activeRoute);
     localStorage.setItem("currentUrl", currentUrl);
-  }, [activeRoute, currentUrl]);
+    localStorage.setItem("activeModule", activeModule || "");
+    localStorage.setItem("activeSubTab", activeSubTab || "");
+  }, [activeRoute, currentUrl, activeModule, activeSubTab]);
 
-  // Update the class dynamically based on activeRoute
   const getButtonClass = (routeId) => {
     return `px-4 py-3 text-sm font-medium whitespace-nowrap hover:bg-white/20 transition-all border-r border-white/10 ${activeRoute === routeId ? "bg-gradient-to-r from-orange-500 to-red-500 shadow-lg" : ""
       }`;
   };
 
-  // Ensure activeRoute is applied correctly on refresh
   useEffect(() => {
     const savedRoute = localStorage.getItem("activeRoute");
     if (savedRoute && savedRoute !== activeRoute) {
@@ -386,9 +369,9 @@ export default function AdminLayout({ children }) {
 
     const handleScroll = () => {
       if (window.scrollY > lastScrollY) {
-        setIsHeaderVisible(false); // Hide header on scroll down
+        setIsHeaderVisible(false);
       } else {
-        setIsHeaderVisible(true); // Show header on scroll up
+        setIsHeaderVisible(true);
       }
       lastScrollY = window.scrollY;
     };
@@ -404,15 +387,8 @@ export default function AdminLayout({ children }) {
           }`}
       >
         <div className="flex items-center justify-between px-4 py-3">
-          {/* Logo with floating animation */}
           <div className="flex items-center">
-            <div
-              className="flex items-center"
-              style={{
-                // animation: 'logoFloat 2s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-                willChange: 'transform'
-              }}
-            >
+            <div className="flex items-center">
               <img
                 src="/logo.png"
                 alt="Logo"
@@ -421,124 +397,28 @@ export default function AdminLayout({ children }) {
             </div>
           </div>
 
-          {/* User Avatar with emoji animation */}
           <div className="flex items-center gap-2">
-            <div
-              className="flex items-center gap-2"
-              style={{
-                opacity: 0,
-                animation: 'slideInFade 1s ease-out 1.5s forwards'
-              }}
-            >
-              <span
-                className="text-xl"
-                style={{
-                  display: 'inline-block',
-                  animation: 'waveHand 1.5s ease-in-out 2.5s'
-                }}
-              >
-
-              </span>
+            <div className="flex items-center gap-2">
               <span className="text-gray-700 font-medium text-sm">
                 Welcome , Aakash
               </span>
             </div>
 
-            <div
-              className="w-10 h-10 bg-gradient-to-br from-red-500 to-gray-500 rounded-full flex items-center justify-center cursor-pointer"
-              style={{
-                opacity: 0,
-                animation: 'bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) 2s forwards'
-              }}
-            >
-              <span className="text-white font-bold text-sm">
-                A
-              </span>
+            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-gray-500 rounded-full flex items-center justify-center cursor-pointer">
+              <span className="text-white font-bold text-sm">A</span>
             </div>
           </div>
         </div>
-
-        {/* CSS animations */}
-        <style jsx>{`
-      @keyframes logoFloat {
-        0% {
-          transform: translateX(-100px) translateY(-100px) rotate(-20deg);
-          opacity: 0;
-          filter: blur(4px);
-        }
-        30% {
-          transform: translateX(50px) translateY(-30px) rotate(10deg);
-          opacity: 0.8;
-          filter: blur(1px);
-        }
-        60% {
-          transform: translateX(-20px) translateY(20px) rotate(-5deg);
-          opacity: 0.9;
-        }
-        80% {
-          transform: translateX(10px) translateY(-10px) rotate(2deg);
-          opacity: 1;
-        }
-        100% {
-          transform: translateX(0) translateY(0) rotate(0deg);
-          opacity: 1;
-          filter: blur(0);
-        }
-      }
-
-      @keyframes slideInFade {
-        0% {
-          opacity: 0;
-          transform: translateX(30px);
-        }
-        100% {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-
-      @keyframes waveHand {
-        0%, 100% {
-          transform: rotate(0deg);
-        }
-        25% {
-          transform: rotate(25deg);
-        }
-        50% {
-          transform: rotate(-10deg);
-        }
-        75% {
-          transform: rotate(15deg);
-        }
-      }
-
-      @keyframes bounceIn {
-        0% {
-          opacity: 0;
-          transform: scale(0.3);
-        }
-        50% {
-          opacity: 0.9;
-          transform: scale(1.1);
-        }
-        70% {
-          transform: scale(0.9);
-        }
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-    `}</style>
       </header>
 
-      {/* Top Navigation Bar - Red Gradient Style */}
+      {/* Top Navigation Bar */}
       <nav className="bg-gradient-to-r from-red-600 via-rose-600 to-gray-600 text-white sticky top-[64px] z-40 shadow-lg">
         <div className="flex items-center overflow-x-auto scrollbar-thin">
           {topNavRoutes.map((route) => (
             <button
               key={route.id}
-              onClick={() => handleRouteClick(route.url, route.id)}
+              data-id={route.id}
+              onClick={() => handleTopTabClick(route.id)}
               className={getButtonClass(route.id)}
             >
               {route.label}
@@ -547,28 +427,37 @@ export default function AdminLayout({ children }) {
         </div>
       </nav>
 
+      {/* Horizontal Sub Navigation */}
+      <HorizontalSubNav
+        activeModule={activeModule}
+        onSubTabClick={handleSubTabClick}
+        activeSubTab={activeSubTab}
+        sidebarConfig={sidebarConfig}
+      />
+
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <span className="font-bold text-lg">Menu</span>
+          <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+              <span className="font-bold text-lg">All Modules</span>
               <button onClick={() => setIsMobileMenuOpen(false)}>
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="p-4 space-y-2">
+            <div className="p-2">
               {topNavRoutes.map((route) => (
                 <button
                   key={route.id}
                   onClick={() => {
-                    handleRouteClick(route.url, route.id)
+                    handleTopTabClick(route.id)
                     setIsMobileMenuOpen(false)
                   }}
-                  className={`w-full text-left px-4 py-3 rounded hover:bg-gray-100 ${activeRoute === route.id ? "bg-gradient-to-r from-red-500 to-gray-500 text-white" : ""
+                  className={`w-full flex items-center gap-3 px-4 py-3 my-1 rounded hover:bg-gray-700/50 transition-all ${activeRoute === route.id ? "bg-gradient-to-r from-red-500 to-gray-500 text-white shadow-lg" : ""
                     }`}
                 >
-                  {route.label}
+                  {route.icon && <route.icon className="h-4 w-4" />}
+                  <span className="text-sm font-medium">{route.label}</span>
                 </button>
               ))}
             </div>
@@ -576,44 +465,43 @@ export default function AdminLayout({ children }) {
         </div>
       )}
 
-      {/* Main Content Layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Mobile Sidebar Toggle */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden fixed bottom-6 right-6 z-50 bg-gradient-to-r from-red-500 to-gray-500 text-white p-4 rounded-full shadow-2xl hover:from-red-600 hover:to-gray-600"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto bg-white lg:pb-0">
+        {/* Show Home Page */}
+        {!isIframeVisible && !showUnderConstruction && activeRoute === "home" && <HomePage />}
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-white">
-          {/* Show Home Page */}
-          {!isIframeVisible && !showUnderConstruction && <HomePage />}
+        {/* Show Under Construction */}
+        {showUnderConstruction && <UnderConstruction />}
 
-          {/* Show Under Construction */}
-          {showUnderConstruction && <UnderConstruction />}
-
-          {/* Show Iframe */}
-          {isIframeVisible && currentUrl && (
-            <div className="h-full flex flex-col">
-              <div className="flex-1 relative">
-                <iframe
-                  id="external-iframe"
-                  src={currentUrl}
-                  className="w-full h-full border-0"
-                  title="External Content"
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
+        {/* Show Iframe */}
+        {isIframeVisible && currentUrl && (
+          <div className="h-full flex flex-col">
+            <div className="flex-1 relative">
+              <iframe
+                id="external-iframe"
+                src={currentUrl}
+                className="w-full h-full border-0"
+                title="External Content"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
-          )}
-        </main>
-      </div>
+          </div>
+        )}
+      </main>
 
-      {/* Custom Styles */}
+      {/* Mobile Bottom Navigation */}
+      {/* <MobileBottomNav
+        activeRoute={activeRoute}
+        onTopTabClick={handleTopTabClick}
+        topNavRoutes={topNavRoutes}
+        activeModule={activeModule}
+        sidebarConfig={sidebarConfig}
+        onSubTabClick={handleSubTabClick}
+        activeSubTab={activeSubTab}
+      /> */}
+
       <style>{`
         .scrollbar-thin::-webkit-scrollbar {
           height: 6px;
