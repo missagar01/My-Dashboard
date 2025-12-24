@@ -4,7 +4,7 @@ import { fetchSystemsApi } from "../redux/api/systemsApi";
 import { fetchAttendanceSummaryApi } from "../redux/api/attendenceApi";
 import { Award, Target } from "lucide-react";
 
-const HomePage = () => {
+const HomePage = ({ allUsersRef }) => {
     const [userDetails, setUserDetails] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true)
@@ -181,69 +181,68 @@ const HomePage = () => {
                             </style>
                         </div>
                     )}
+
                     {localStorage.getItem("user-name")?.toLowerCase() !== "admin" && (
                         <div>
-                            <div className="grid grid-cols md:grid-cols">
-                                {/* Employee Card - Dynamic based on API data */}
-                                <div className="flex flex-col-2 md:flex-row bg-gray-50 rounded-lg shadow-md overflow-hidden gap-10 items-center justify-center md:items-start md:justify-start md:text-left">
-                                    <img
-                                        src={
-                                            userDetails?.employee_id
-                                                ? `/employees/${userDetails.employee_id}.jpg`
-                                                : "/user.png"
-                                        }
-                                        alt="Employee"
-                                        className="w-34 md:w-1/3 h-34 md:h-auto object-cover"
-                                        onError={(e) => {
-                                            e.target.src = "/user.png";
-                                        }}
-                                    />
+                            <div className="flex flex-col-2 md:flex-row bg-gray-50 rounded-lg shadow-md overflow-hidden gap-10 items-center justify-center md:items-start md:justify-start md:text-left">
+                                <img
+                                    src={
+                                        userDetails?.employee_id
+                                            ? `/employees/${userDetails.employee_id}.jpg`
+                                            : "/user.png"
+                                    }
+                                    alt="Employee"
+                                    className="w-34 md:w-1/3 h-34 md:h-auto object-cover lg:w-48 lg:h-48"
+                                    onError={(e) => {
+                                        e.target.src = "/user.png";
+                                    }}
+                                />
 
-                                    <div className="flex flex-col text-sm md:text-base lg:text-xl xl:text-6xl">
-                                        {loading ? (
-                                            <div className="space-y-3">
-                                                <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
-                                                <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
-                                                <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
-                                                <div className="h-4 bg-gray-200 rounded w-36 animate-pulse"></div>
-                                                <div className="h-4 bg-gray-200 rounded w-44 animate-pulse"></div>
-                                            </div>
-                                        ) : userDetails ? (
-                                            <>
-                                                <h3 className="text-lg md:text-xl lg:text-2xl xl:text-6xl font-bold text-gray-800 mb-2">
-                                                    {userDetails.user_name || "N/A"}
-                                                </h3>
-                                                <p className="text-gray-600 mb-1">
-                                                    <span className="font-semibold">Employee ID:</span> {userDetails.employee_id || "N/A"}
-                                                </p>
-                                                <p className="text-gray-600 mb-1">
-                                                    <span className="font-semibold">Department:</span> {userDetails.department || "N/A"}
-                                                </p>
-                                                <p className="text-gray-600 mb-1">
-                                                    <span className="font-semibold">Phone:</span> {userDetails.number || "N/A"}
-                                                </p>
-                                                <p className="text-gray-600 mb-1">
-                                                    <span className="font-semibold">Email:</span> {userDetails.email_id || "N/A"}
-                                                </p>
-                                                <p className="text-gray-600 mb-1">
-                                                    <span className="font-semibold">Status:</span>
-                                                    <span className={`ml-2 px-2 py-1 text-xs rounded-full ${userDetails.status === "active"
-                                                        ? "bg-green-100 text-green-800"
-                                                        : "bg-red-100 text-red-800"
-                                                        }`}>
-                                                        {userDetails.status || "N/A"}
-                                                    </span>
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <div>
-                                                <h3 className="text-2xl font-bold text-gray-800 mb-2">Employee Details</h3>
-                                                <p className="text-gray-600">Unable to load employee information</p>
-                                            </div>
-                                        )}
-                                    </div>
+                                <div className="flex flex-col text-sm md:text-base lg:text-base">
+                                    {loading ? (
+                                        <div className="space-y-3">
+                                            <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-36 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-44 animate-pulse"></div>
+                                        </div>
+                                    ) : userDetails ? (
+                                        <>
+                                            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-2">
+                                                {userDetails.user_name || "N/A"}
+                                            </h3>
+                                            <p className="text-gray-600 mb-1">
+                                                <span className="font-semibold">Employee ID:</span> {userDetails.employee_id || "N/A"}
+                                            </p>
+                                            <p className="text-gray-600 mb-1">
+                                                <span className="font-semibold">Department:</span> {userDetails.department || "N/A"}
+                                            </p>
+                                            <p className="text-gray-600 mb-1">
+                                                <span className="font-semibold">Phone:</span> {userDetails.number || "N/A"}
+                                            </p>
+                                            <p className="text-gray-600 mb-1">
+                                                <span className="font-semibold">Email:</span> {userDetails.email_id || "N/A"}
+                                            </p>
+                                            <p className="text-gray-600 mb-1">
+                                                <span className="font-semibold">Status:</span>
+                                                <span className={`ml-2 px-2 py-1 text-xs rounded-full ${userDetails.status === "active"
+                                                    ? "bg-green-100 text-green-800"
+                                                    : "bg-red-100 text-red-800"
+                                                    }`}>
+                                                    {userDetails.status || "N/A"}
+                                                </span>
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-gray-800 mb-2">Employee Details</h3>
+                                            <p className="text-gray-600">Unable to load employee information</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+
                             <div className="grid grid-cols-2 gap-2 mt-4">
                                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
                                     <div className="p-6 text-center">
@@ -292,6 +291,7 @@ const HomePage = () => {
                                 </div>
 
                             </div>
+
                             <div className="bg-white rounded-xl shadow-md overflow-hidden">
                                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
                                     <div className="p-3">
@@ -383,173 +383,175 @@ const HomePage = () => {
                         </div>
                     )}
 
-                    {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
-                        <div className="w-full">
-                            <div className="bg-gray-50 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
-                                <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
-                                    All Users ({filteredUsers.length})
-                                </h1>
+                    <div ref={allUsersRef}>
+                        {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                            <div className="w-full">
+                                <div className="bg-gray-50 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
+                                    <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
+                                        All Users ({filteredUsers.length})
+                                    </h1>
 
-                                {allUsers.length === 0 ? (
-                                    <p className="text-gray-600">No users found...</p>
-                                ) : (
-                                    <><div className="flex flex-col-2 md:flex-row gap-4 mb-4">
+                                    {allUsers.length === 0 ? (
+                                        <p className="text-gray-600">No users found...</p>
+                                    ) : (
+                                        <><div className="flex flex-col-2 md:flex-row gap-4 mb-4">
 
-                                        {/* Search Box */}
-                                        <input
-                                            type="text"
-                                            placeholder="Search by Employee ID or Username..."
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            className="w-full md:w-1/3 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none" />
+                                            {/* Search Box */}
+                                            <input
+                                                type="text"
+                                                placeholder="Search by Employee ID or Username..."
+                                                value={search}
+                                                onChange={(e) => setSearch(e.target.value)}
+                                                className="w-full md:w-1/3 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none" />
 
-                                        {/* Department Dropdown */}
-                                        <select
-                                            value={departmentFilter}
-                                            onChange={(e) => setDepartmentFilter(e.target.value)}
-                                            className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
-                                        >
-                                            <option value="">All Departments</option>
-                                            {[...new Set(allUsers.map((u) => u.department))].map((dept) => (
-                                                <option key={dept} value={dept}>
-                                                    {dept}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <select
-                                            value={attendanceFilter}
-                                            onChange={(e) => setAttendanceFilter(e.target.value)}
-                                            className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
-                                        >
-                                            <option value="">All Attendance</option>
-                                            <option value="present">Present</option>
-                                            <option value="absent">Absent</option>
-                                        </select>
-                                    </div>
-                                        <div className="relative max-h-[65vh] overflow-y-auto overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
-                                            <table className="min-w-full text-sm">
-                                                {/* HEADER */}
-                                                <thead className="sticky top-0 z-10 bg-gradient-to-r from-gray-50 to-gray-100 backdrop-blur border-b">
-                                                    <tr>
-                                                        {[
-                                                            "Employee ID",
-                                                            "Username",
-                                                            "Department",
-                                                            "Attendance",
-                                                            "Contact",
-                                                            "System Access",
-                                                            "Status",
-                                                        ].map((h) => (
-                                                            <th
-                                                                key={h}
-                                                                className="px-4 py-3 text-left font-semibold text-gray-700 tracking-wide uppercase text-xs"
-                                                            >
-                                                                {h}
-                                                            </th>
-                                                        ))}
-                                                    </tr>
-                                                </thead>
-
-                                                {/* BODY */}
-                                                <tbody className="divide-y divide-gray-100">
-                                                    {filteredUsers.map((user, idx) => (
-                                                        <tr
-                                                            key={user.id}
-                                                            className={`transition ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/40"
-                                                                } hover:bg-red-50`}
-                                                        >
-                                                            <td className="px-4 py-3 font-medium text-gray-800">
-                                                                {user.employee_id}
-                                                            </td>
-
-                                                            <td className="px-4 py-3 text-gray-700">
-                                                                {user.user_name}
-                                                            </td>
-
-                                                            <td className="px-4 py-3 text-gray-600">
-                                                                {user.user_access}
-                                                            </td>
-
-                                                            <td className="px-4 py-3">
-                                                                {attendanceMap[user.employee_id] === "IN" ? (
-                                                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-700">
-                                                                        Present
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-700">
-                                                                        Absent
-                                                                    </span>
-                                                                )}
-                                                            </td>
-
-                                                            <td className="px-4 py-3 text-gray-600">
-                                                                {user.number}
-                                                            </td>
-
-                                                            {/* SYSTEM ACCESS */}
-                                                            <td className="px-4 py-3">
-                                                                <select
-                                                                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs
-                           focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                                                                    defaultValue=""
-                                                                    onChange={(e) => {
-                                                                        const value = e.target.value;
-                                                                        if (!value) return;
-                                                                        handleSystemAccessPatch(user.id, value);
-                                                                        e.target.value = "";
-                                                                    }}
-                                                                >
-                                                                    <option value="">Add system access</option>
-                                                                    {systemsList.map((sys) => (
-                                                                        <option key={sys.id} value={sys.systems}>
-                                                                            {sys.systems}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-
-                                                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                                                    {user.system_access?.split(",").map((access) => (
-                                                                        <span
-                                                                            key={access}
-                                                                            className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
-                                                                        >
-                                                                            {access}
-                                                                            <button
-                                                                                onClick={() =>
-                                                                                    handleSystemAccessPatch(user.id, access)
-                                                                                }
-                                                                                className="text-red-500 hover:text-red-700"
-                                                                            >
-                                                                                ✕
-                                                                            </button>
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </td>
-
-                                                            {/* STATUS */}
-                                                            <td className="px-4 py-3">
-                                                                <span
-                                                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
-                  ${user.status?.toLowerCase() === "active"
-                                                                            ? "bg-green-100 text-green-700"
-                                                                            : "bg-red-100 text-red-700"
-                                                                        }`}
-                                                                >
-                                                                    {user.status || "N/A"}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                            {/* Department Dropdown */}
+                                            <select
+                                                value={departmentFilter}
+                                                onChange={(e) => setDepartmentFilter(e.target.value)}
+                                                className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                            >
+                                                <option value="">All Departments</option>
+                                                {[...new Set(allUsers.map((u) => u.department))].map((dept) => (
+                                                    <option key={dept} value={dept}>
+                                                        {dept}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <select
+                                                value={attendanceFilter}
+                                                onChange={(e) => setAttendanceFilter(e.target.value)}
+                                                className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                            >
+                                                <option value="">All Attendance</option>
+                                                <option value="present">Present</option>
+                                                <option value="absent">Absent</option>
+                                            </select>
                                         </div>
+                                            <div className="relative max-h-[65vh] overflow-y-auto overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+                                                <table className="min-w-full text-sm">
+                                                    {/* HEADER */}
+                                                    <thead className="sticky top-0 z-10 bg-gradient-to-r from-gray-50 to-gray-100 backdrop-blur border-b">
+                                                        <tr>
+                                                            {[
+                                                                "Employee ID",
+                                                                "Username",
+                                                                "Department",
+                                                                "Attendance",
+                                                                "Contact",
+                                                                "System Access",
+                                                                "Status",
+                                                            ].map((h) => (
+                                                                <th
+                                                                    key={h}
+                                                                    className="px-4 py-3 text-left font-semibold text-gray-700 tracking-wide uppercase text-xs"
+                                                                >
+                                                                    {h}
+                                                                </th>
+                                                            ))}
+                                                        </tr>
+                                                    </thead>
 
-                                    </>
-                                )}
+                                                    {/* BODY */}
+                                                    <tbody className="divide-y divide-gray-100">
+                                                        {filteredUsers.map((user, idx) => (
+                                                            <tr
+                                                                key={user.id}
+                                                                className={`transition ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/40"
+                                                                    } hover:bg-red-50`}
+                                                            >
+                                                                <td className="px-4 py-3 font-medium text-gray-800">
+                                                                    {user.employee_id}
+                                                                </td>
+
+                                                                <td className="px-4 py-3 text-gray-700">
+                                                                    {user.user_name}
+                                                                </td>
+
+                                                                <td className="px-4 py-3 text-gray-600">
+                                                                    {user.user_access}
+                                                                </td>
+
+                                                                <td className="px-4 py-3">
+                                                                    {attendanceMap[user.employee_id] === "IN" ? (
+                                                                        <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-700">
+                                                                            Present
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-700">
+                                                                            Absent
+                                                                        </span>
+                                                                    )}
+                                                                </td>
+
+                                                                <td className="px-4 py-3 text-gray-600">
+                                                                    {user.number}
+                                                                </td>
+
+                                                                {/* SYSTEM ACCESS */}
+                                                                <td className="px-4 py-3">
+                                                                    <select
+                                                                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs
+                           focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                                        defaultValue=""
+                                                                        onChange={(e) => {
+                                                                            const value = e.target.value;
+                                                                            if (!value) return;
+                                                                            handleSystemAccessPatch(user.id, value);
+                                                                            e.target.value = "";
+                                                                        }}
+                                                                    >
+                                                                        <option value="">Add system access</option>
+                                                                        {systemsList.map((sys) => (
+                                                                            <option key={sys.id} value={sys.systems}>
+                                                                                {sys.systems}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+
+                                                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                                                        {user.system_access?.split(",").map((access) => (
+                                                                            <span
+                                                                                key={access}
+                                                                                className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+                                                                            >
+                                                                                {access}
+                                                                                <button
+                                                                                    onClick={() =>
+                                                                                        handleSystemAccessPatch(user.id, access)
+                                                                                    }
+                                                                                    className="text-red-500 hover:text-red-700"
+                                                                                >
+                                                                                    ✕
+                                                                                </button>
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
+                                                                </td>
+
+                                                                {/* STATUS */}
+                                                                <td className="px-4 py-3">
+                                                                    <span
+                                                                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
+                                                                        ${user.status?.toLowerCase() === "active"
+                                                                                ? "bg-green-100 text-green-700"
+                                                                                : "bg-red-100 text-red-700"
+                                                                            }`}
+                                                                    >
+                                                                        {user.status || "N/A"}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                        </>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </section >
 
