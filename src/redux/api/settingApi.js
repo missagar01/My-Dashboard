@@ -10,6 +10,15 @@ export const fetchUserDetailsApi = async () => {
     }
 };
 
+export const fetchUserDetailsApiById = async (id) => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/${id}`);
+        return await response.json();
+    } catch (error) {
+        console.log("Error fetching user details by ID", error);
+        return null;
+    }
+};
 
 export const deleteUserByIdApi = async (id) => {
     try {

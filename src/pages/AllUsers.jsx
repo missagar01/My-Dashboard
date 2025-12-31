@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react"
-import { fetchUserDetailsApi, patchSystemAccessApi } from "../redux/api/settingApi";
+import { fetchUserDetailsApi, patchSystemAccessApi, fetchUserDetailsApiById } from "../redux/api/settingApi";
 import { fetchSystemsApi } from "../redux/api/systemsApi";
 import { fetchAttendanceSummaryApi } from "../redux/api/attendenceApi";
 import { Award, Target } from "lucide-react";
+import {
+    getPendingTodayApi,
+    getCompletedTodayApi,
+    getCompletedTaskApi,
+    getPendingTaskApi,
+    getNotDoneTaskApi,
+    getOverdueTaskApi,
+} from "../redux/api/dashboardApi";
+
 
 const HomePage = ({ allUsersRef }) => {
     const [userDetails, setUserDetails] = useState(null);
@@ -13,17 +22,21 @@ const HomePage = ({ allUsersRef }) => {
     const [systemsList, setSystemsList] = useState([]);
     const [attendance, setAttendance] = useState(null);
     const [attendanceFilter, setAttendanceFilter] = useState("");
-
+    const [pendingToday, setPendingToday] = useState(0);
+    const [completedToday, setCompletedToday] = useState(0);
+    const [completed, setCompleted] = useState(0);
+    const [pending, setPending] = useState(0);
+    const [notDone, setNotDone] = useState(0);
+    const [overdue, setOverdue] = useState(0);
 
     const handleSystemAccessPatch = async (id, value) => {
         if (!value.trim()) return;
 
         await patchSystemAccessApi({
             id: id,
-            system_access: value, // append handled in backend
+            system_access: value,
         });
 
-        // refresh users list after patch
         const users = await fetchUserDetailsApi();
         setAllUsers(users);
     };
@@ -34,33 +47,35 @@ const HomePage = ({ allUsersRef }) => {
             try {
                 setLoading(true);
 
-                const storedUsername = localStorage.getItem("user-name");
+                // const storedUsername = localStorage.getItem("role");
+                const role = localStorage.getItem("role");
+                const userId = localStorage.getItem("user_id");
 
-                const usersRes = await fetchUserDetailsApi();
-                const users = Array.isArray(usersRes) ? usersRes : [];
-                setAllUsers(users);
+                if (role === "admin") {
+                    const usersRes = await fetchUserDetailsApi();
+                    const users = Array.isArray(usersRes) ? usersRes : [];
+                    setAllUsers(users);
+
+                    const systemsData = await fetchSystemsApi();
+                    setSystemsList(Array.isArray(systemsData) ? systemsData : []);
+
+                    // attendance logic (UNCHANGED)
+                    const attendanceRes = await fetchAttendanceSummaryApi();
+                    const attendanceList = Array.isArray(attendanceRes?.data?.data)
+                        ? attendanceRes.data.data
+                        : [];
+                    setAttendance(attendanceList);
+
+                    return;
+                }
+
+                if (!userId) return;
+
+                const matchedUser = await fetchUserDetailsApiById(userId);
+                setUserDetails(matchedUser || null);
 
                 const systemsData = await fetchSystemsApi();
                 setSystemsList(Array.isArray(systemsData) ? systemsData : []);
-
-                if (!storedUsername || users.length === 0) return;
-
-                const matchedUser = users.find(
-                    (u) =>
-                        u?.user_name?.toLowerCase() === storedUsername.toLowerCase()
-                );
-
-                setUserDetails(matchedUser || null);
-
-                localStorage.setItem(
-                    "system_access",
-                    JSON.stringify(
-                        (matchedUser?.system_access || "")
-                            .split(",")
-                            .map((v) => v.trim().toUpperCase())
-                            .filter(Boolean)
-                    )
-                );
 
                 const attendanceRes = await fetchAttendanceSummaryApi();
                 const attendanceList = Array.isArray(attendanceRes?.data?.data)
@@ -77,15 +92,55 @@ const HomePage = ({ allUsersRef }) => {
                     );
                     setAttendance(matchedAttendance || null);
                 }
+
+                const username = localStorage.getItem("user-name");
+
+                const dashboardType = "checklist"; // or tasks table name you use
+
+                const pendingCountToday = await getPendingTodayApi({
+                    dashboardType,
+                    role,
+                    username,
+                });
+
+                const completedCountToday = await getCompletedTodayApi({
+                    dashboardType,
+                    role,
+                    username,
+                });
+
+                setPendingToday(pendingCountToday || 0);
+                setCompletedToday(completedCountToday || 0);
+
+                const [
+                    completedCount,
+                    pendingCount,
+                    notDoneCount,
+                    overdueCount,
+                ] = await Promise.all([
+                    getCompletedTaskApi({ dashboardType, role, username }),
+                    getPendingTaskApi({ dashboardType, role, username }),
+                    getNotDoneTaskApi({ dashboardType, role, username }),
+                    getOverdueTaskApi({ dashboardType, role, username }),
+                ]);
+
+                setCompleted(Number(completedCount) || 0);
+                setPending(Number(pendingCount) || 0);
+                setNotDone(Number(notDoneCount) || 0);
+                setOverdue(Number(overdueCount) || 0);
+
+
             } catch (error) {
                 console.error("Error fetching employee details:", error);
             } finally {
                 setLoading(false);
             }
+
         };
 
         fetchEmployeeDetails();
     }, []);
+
 
     const attendanceMap = Array.isArray(attendance)
         ? attendance.reduce((acc, a) => {
@@ -113,11 +168,34 @@ const HomePage = ({ allUsersRef }) => {
         return matchesSearch && matchesDept && matchesAttendance;
     });
 
+    const RADIUS = 60;
+    const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+    const total =
+        completed + pending + notDone + overdue || 1;
+
+    const completedPct = (completed / total) * 100;
+    const pendingPct = (pending / total) * 100;
+    const notDonePct = (notDone / total) * 100;
+    const overduePct = (overdue / total) * 100;
+
+    const completedLen = (completed / total) * CIRCUMFERENCE;
+    const pendingLen = (pending / total) * CIRCUMFERENCE;
+    const notDoneLen = (notDone / total) * CIRCUMFERENCE;
+    const overdueLen = (overdue / total) * CIRCUMFERENCE;
+
+    const completedOffset = 0;
+    const pendingOffset = completedLen;
+    const notDoneOffset = completedLen + pendingLen;
+    const overdueOffset = completedLen + pendingLen + notDoneLen;
+
+
+
     return (
         <div className="w-full">
             <section className="py-4 md:py-4 bg-white">
                 <div className="container mx-auto px-4 md:px-8">
-                    {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                    {localStorage.getItem("role")?.toLowerCase() === "admin" && (
                         <div className="max-w-4xl mx-auto text-center mb-12">
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white bg-red-600 inline-block px-4 py-1 opacity-70 rounded mb-6">
                                 Welcome To Sourabh Rolling Mill
@@ -182,7 +260,7 @@ const HomePage = ({ allUsersRef }) => {
                         </div>
                     )}
 
-                    {localStorage.getItem("user-name")?.toLowerCase() !== "admin" && (
+                    {localStorage.getItem("role")?.toLowerCase() !== "admin" && (
                         <div>
                             <div className="flex flex-col-2 md:flex-row bg-gray-50 rounded-lg shadow-md overflow-hidden gap-10 items-center justify-center md:items-start md:justify-start md:text-left">
                                 <img
@@ -251,7 +329,7 @@ const HomePage = ({ allUsersRef }) => {
                                         </h3>
 
                                         <p className="text-yellow-600 font-semibold text-lg">
-                                            Upcoming...<span className="text-green-600"></span>
+                                            {completedToday} / {" "}<span className="text-green-600"> {pendingToday}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -309,8 +387,8 @@ const HomePage = ({ allUsersRef }) => {
                                                     <circle
                                                         cx="72"
                                                         cy="72"
-                                                        r="60"
-                                                        stroke="#a7b0c0ff"
+                                                        r={RADIUS}
+                                                        stroke="#e5e7eb"
                                                         strokeWidth="12"
                                                         fill="none"
                                                     />
@@ -319,12 +397,12 @@ const HomePage = ({ allUsersRef }) => {
                                                     <circle
                                                         cx="72"
                                                         cy="72"
-                                                        r="60"
+                                                        r={RADIUS}
                                                         stroke="#10b981"
                                                         strokeWidth="12"
                                                         fill="none"
-                                                        strokeDasharray="377"
-                                                        strokeDashoffset="57"
+                                                        strokeDasharray={`${completedLen} ${CIRCUMFERENCE}`}
+                                                        strokeDashoffset={-completedOffset}
                                                         strokeLinecap="line"
                                                     />
 
@@ -332,20 +410,48 @@ const HomePage = ({ allUsersRef }) => {
                                                     <circle
                                                         cx="72"
                                                         cy="72"
-                                                        r="60"
+                                                        r={RADIUS}
                                                         stroke="#f59e0b"
                                                         strokeWidth="12"
                                                         fill="none"
-                                                        strokeDasharray="377"
-                                                        strokeDashoffset="321"
+                                                        strokeDasharray={`${pendingLen} ${CIRCUMFERENCE}`}
+                                                        strokeDashoffset={-pendingOffset}
+                                                        strokeLinecap="line"
+                                                    />
+
+                                                    {/* Not Done */}
+                                                    <circle
+                                                        cx="72"
+                                                        cy="72"
+                                                        r={RADIUS}
+                                                        stroke="#9ca3af"
+                                                        strokeWidth="12"
+                                                        fill="none"
+                                                        strokeDasharray={`${notDoneLen} ${CIRCUMFERENCE}`}
+                                                        strokeDashoffset={-notDoneOffset}
+                                                        strokeLinecap="line"
+                                                    />
+
+                                                    {/* Overdue */}
+                                                    <circle
+                                                        cx="72"
+                                                        cy="72"
+                                                        r={RADIUS}
+                                                        stroke="#ef4444"
+                                                        strokeWidth="12"
+                                                        fill="none"
+                                                        strokeDasharray={`${overdueLen} ${CIRCUMFERENCE}`}
+                                                        strokeDashoffset={-overdueOffset}
                                                         strokeLinecap="line"
                                                     />
                                                 </svg>
 
-                                                {/* CENTER TEXT */}
+                                                {/* Center */}
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                    <span className="text-3xl font-bold text-indigo-600">00.0%</span>
-                                                    <span className="text-xs text-gray-500">Overall</span>
+                                                    <span className="text-2xl font-bold text-indigo-600">
+                                                        {completedPct.toFixed(1)}%
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">Completed</span>
                                                 </div>
                                             </div>
 
@@ -353,28 +459,25 @@ const HomePage = ({ allUsersRef }) => {
                                             <div className="space-y-2 text-sm">
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                                                    <span className="font-medium">Completed:</span>
-                                                    <span className="text-gray-600">0.0%</span>
+                                                    Completed: {completed} ({completedPct.toFixed(1)}%)
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-3 h-3 rounded-full bg-orange-500"></span>
-                                                    <span className="font-medium">Pending:</span>
-                                                    <span className="text-gray-600">0.0%</span>
+                                                    Pending: {pending} ({pendingPct.toFixed(1)}%)
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-3 h-3 rounded-full bg-gray-400"></span>
-                                                    <span className="font-medium">Not Done:</span>
-                                                    <span className="text-gray-600">0.0%</span>
+                                                    Not Done: {notDone} ({notDonePct.toFixed(1)}%)
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                                                    <span className="font-medium">Overdue:</span>
-                                                    <span className="text-gray-600">0.0%</span>
+                                                    Overdue: {overdue} ({overduePct.toFixed(1)}%)
                                                 </div>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -384,7 +487,7 @@ const HomePage = ({ allUsersRef }) => {
                     )}
 
                     <div ref={allUsersRef}>
-                        {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                        {localStorage.getItem("role")?.toLowerCase() === "admin" && (
                             <div className="w-full">
                                 <div className="bg-gray-50 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
                                     <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
@@ -563,7 +666,7 @@ const HomePage = ({ allUsersRef }) => {
                         <div className="text-center md:text-left">
                             <h4 className="text-xl font-semibold mb-4 text-red-400">Contact Us</h4>
                             <div className="space-y-3">
-                                {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                                {localStorage.getItem("role")?.toLowerCase() === "admin" && (
                                     <div className="flex items-center justify-center md:justify-start">
                                         <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />

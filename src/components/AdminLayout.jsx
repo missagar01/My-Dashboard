@@ -8,7 +8,7 @@ import {
   updateSystemApi,
   deleteSystemApi,
 } from "../redux/api/systemsApi";
-import { fetchUserDetailsApi } from "../redux/api/settingApi";
+// import { fetchUserDetailsApi } from "../redux/api/settingApi";
 
 // Under Construction Component
 function UnderConstruction() {
@@ -159,40 +159,27 @@ export default function AdminLayout({ children }) {
   }, [activeRoute, currentUrl]);
 
   useEffect(() => {
-    const loadSystemAccess = async () => {
-      try {
-        // admin → allow all
-        if (isAdmin) {
-          setSystemAccessList([]);
-          return;
-        }
+    if (isAdmin) {
+      setSystemAccessList([]);
+      return;
+    }
 
-        const users = await fetchUserDetailsApi();
-        const username = localStorage.getItem("user-name")?.toLowerCase();
+    const storedAccess = localStorage.getItem("system_access");
 
-        const currentUser = users.find(
-          (u) => u.user_name?.toLowerCase() === username
-        );
+    if (!storedAccess) {
+      setSystemAccessList([]);
+      return;
+    }
 
-        if (currentUser?.system_access) {
-          const accessArray = Array.isArray(currentUser.system_access)
-            ? currentUser.system_access
-            : currentUser.system_access.split(",");
+    const accessArray = storedAccess
+      .split(",")
+      .map((v) => v.trim().toUpperCase())
+      .filter(Boolean);
 
-          setSystemAccessList(
-            accessArray.map((v) => v.trim().toUpperCase())
-          );
-        } else {
-          setSystemAccessList([]);
-        }
-      } catch (err) {
-        console.error("Failed to load system_access", err);
-        setSystemAccessList([]);
-      }
-    };
-
-    loadSystemAccess();
+    setSystemAccessList(accessArray);
   }, [isAdmin]);
+
+
 
   useEffect(() => {
     if (!username) {
@@ -383,7 +370,6 @@ export default function AdminLayout({ children }) {
                   className="w-full h-full border-0"
                   title="External Content"
                   // sandbox="allow-forms allow-modals allow-scripts allow-same-origin allow-storage-access-by-user-activation"
-                  allow="*"
                   allowFullScreen
                 />
               </div>

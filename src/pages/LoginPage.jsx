@@ -53,6 +53,7 @@ const LoginPage = () => {
       // console.log("User Data:", userData);
 
       // Save data once
+      localStorage.setItem("user_id", userData.id || "");
       localStorage.setItem("user-name", userData.user_name || userData.username || "");
       localStorage.setItem("role", userData.role || "");
       localStorage.setItem("email_id", userData.email_id || userData.email || "");
