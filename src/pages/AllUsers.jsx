@@ -156,7 +156,7 @@ const HomePage = ({ allUsersRef }) => {
             u.user_name?.toLowerCase().includes(search.toLowerCase());
 
         const matchesDept =
-            departmentFilter === "" || u.department === departmentFilter;
+            departmentFilter === "" || u.user_access === departmentFilter;
 
         const attendanceStatus =
             attendanceMap[u.employee_id] === "IN" ? "present" : "absent";
@@ -293,7 +293,7 @@ const HomePage = ({ allUsersRef }) => {
                                                 <span className="font-semibold">Employee ID:</span> {userDetails.employee_id || "N/A"}
                                             </p>
                                             <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Department:</span> {userDetails.department || "N/A"}
+                                                <span className="font-semibold">Department:</span> {userDetails.user_access || "N/A"}
                                             </p>
                                             <p className="text-gray-600 mb-1">
                                                 <span className="font-semibold">Phone:</span> {userDetails.number || "N/A"}
