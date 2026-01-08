@@ -56,6 +56,7 @@ export default function AdminLayout({ children }) {
   });
   const [systemAccessList, setSystemAccessList] = useState([]);
   const [isAdminSidebarOpen, setIsAdminSidebarOpen] = useState(false);
+  const [showAllUsersModal, setShowAllUsersModal] = useState(false);
   const allUsersRef = useRef(null);
 
 
@@ -354,9 +355,15 @@ export default function AdminLayout({ children }) {
             </div>
           )} */}
           {/* Show Home Page */}
-          {!isIframeVisible && !showUnderConstruction && <HomePage allUsersRef={allUsersRef} />}
-          <div id="all-users-section">
-          </div>
+
+          {!isIframeVisible && !showUnderConstruction && (
+            <HomePage
+              allUsersRef={allUsersRef}
+              showAllUsersModal={showAllUsersModal}
+              setShowAllUsersModal={setShowAllUsersModal}
+            />
+          )}
+
           {/* Show Under Construction */}
           {showUnderConstruction && <UnderConstruction />}
 
@@ -627,10 +634,11 @@ export default function AdminLayout({ children }) {
             {/* All Users */}
             <button
               onClick={() => {
-                setActiveRoute("HOME");
-                setIsIframeVisible(false);
-                setShowUnderConstruction(false);
-                setCurrentUrl("");
+                // setActiveRoute("HOME");
+                // setIsIframeVisible(false);
+                // setShowUnderConstruction(false);
+                // setCurrentUrl("");
+                setShowAllUsersModal(true);
                 setIsAdminSidebarOpen(false);
 
                 requestAnimationFrame(() => {
