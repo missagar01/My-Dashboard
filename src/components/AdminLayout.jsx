@@ -226,7 +226,6 @@ export default function AdminLayout({ children }) {
           }`}
       >
         <div className="flex items-center justify-between px-4 py-3">
-          {/* Logo with floating animation */}
           <div className="flex items-center">
             <div className="flex items-center motion-safe:animate-float">
               <img
@@ -237,22 +236,30 @@ export default function AdminLayout({ children }) {
             </div>
           </div>
 
-          {/* User Avatar with emoji animation */}
           <div className="flex items-center gap-2">
+
             <div className="flex items-center gap-2 opacity-100 animate-slide-in-fade delay-500">
               <span className="inline-block animate-wave"></span>
               <span className="text-gray-700 font-medium text-sm">
                 Welcome, {username || "User"}
               </span>
+
             </div>
 
+
             {username?.toLowerCase() === "admin" ? (
-              <div
-                className="w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full flex items-center justify-center cursor-pointer transition opacity-100 "
-                onClick={() => setIsAdminSidebarOpen(true)}
+              <><button
+                className="lg:hidden w-10 h-10 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center"
+                onClick={() => setIsMobileMenuOpen(true)}
               >
-                <Settings className="text-white w-5 h-5" />
-              </div>
+                <span className="text-white text-xl font-bold">☰</span>
+              </button>
+                <div className="hidden lg:flex w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full items-center justify-center cursor-pointer transition"
+                  onClick={() => setIsAdminSidebarOpen(true)}
+                >
+                  <Settings className="text-white w-5 h-5" />
+                </div></>
+
             ) : (
               <div
                 onClick={handleLogout}
@@ -266,7 +273,7 @@ export default function AdminLayout({ children }) {
       </header>
 
       {/* Top Navigation Bar - Red Gradient Style */}
-      <nav className="bg-gradient-to-r from-red-900 via-rose-600 to-gray-600 text-white sticky top-[64px] z-40 shadow-lg">
+      <nav className="hidden lg:block bg-gradient-to-r from-red-900 via-rose-600 to-gray-600 text-white sticky top-[64px] z-40 shadow-lg">
         <div className="flex items-center overflow-x-auto scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10">
           {topNavRoutes
             .filter((route) => {
@@ -293,69 +300,118 @@ export default function AdminLayout({ children }) {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* MOBILE SIDEBAR (SYSTEMS + ADMIN ACTIONS) */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <span className="font-bold text-lg">Menu</span>
-              <button onClick={() => setIsMobileMenuOpen(false)}>
-                <X className="h-6 w-6" />
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          {/* Overlay */}
+          <div
+            className="flex-1 bg-black/40"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Sidebar */}
+          <div className="w-80 bg-white shadow-2xl flex flex-col">
+            {/* HEADER */}
+            <div className="px-5 py-4 border-b relative">
+
+              {/* CLOSE ICON – TOP RIGHT */}
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded hover:bg-gray-100"
+              >
+                <X className="w-5 h-5 text-gray-600" />
               </button>
+
+              <p className="text-xs text-gray-500">Welcome</p>
+              <p className="text-lg font-semibold text-gray-800">
+                {username}
+              </p>
             </div>
-            <div className="p-4 space-y-2">
-              {topNavRoutes
-                .filter((route) => {
-                  const routeId = route.id.toUpperCase();
-                  const usernameLower = username?.toLowerCase();
 
-                  if (usernameLower === "admin") return true;
-                  if (routeId === "HOME") return true;
-                  if (DEFAULT_SYSTEMS.includes(routeId)) return true;
+            {/* SYSTEMS */}
+            <div className="px-5 py-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
+                Systems
+              </p>
 
-                  return systemAccessList.includes(routeId);
-                })
-                .map((route) => (
-                  <button
-                    key={route.id}
-                    onClick={() => {
-                      handleRouteClick(route.url, route.id);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 rounded hover:bg-gray-100 ${activeRoute === route.id
-                      ? "bg-gradient-to-r from-red-500 to-gray-500 text-white"
-                      : ""
-                      }`}
-                  >
-                    {route.label}
-                  </button>
-                ))}
+              <div className="space-y-1">
+                {topNavRoutes
+                  .filter((route) => {
+                    const routeId = route.id.toUpperCase();
+                    if (routeId === "HOME") return true;
+                    if (isAdmin) return routeId !== "HOME";
+                    if (DEFAULT_SYSTEMS.includes(routeId)) return true;
+                    return systemAccessList.includes(routeId);
+                  })
+                  .map((route) => (
+                    <button
+                      key={route.id}
+                      onClick={() => {
+                        handleRouteClick(route.url, route.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full px-4 py-3 rounded-md text-sm font-medium text-left transition
+                  ${activeRoute === route.id
+                          ? "bg-red-600 text-white shadow"
+                          : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                    >
+                      {route.label}
+                    </button>
+                  ))}
+              </div>
+            </div>
 
+            {/* ACTIONS */}
+            {isAdmin && (
+              <div className="px-5 py-4 border-t">
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
+                  Actions
+                </p>
+
+                <button
+                  onClick={() => {
+                    setShowAllUsersModal(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  Show All Users
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEditSystem(null);
+                    setShowSystemModal(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  Add / Edit Systems
+                </button>
+              </div>
+            )}
+
+            {/* LOGOUT */}
+            <div className="mt-auto px-5 py-4 border-t">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-4 py-3 rounded-md text-red-600 hover:bg-red-50 font-medium"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
             </div>
           </div>
         </div>
       )}
 
+
+
       {/* Main Content Layout */}
       <div className="flex flex-1 overflow-hidden">
 
         <main className="flex-1 overflow-y-auto bg-white">
-
-          {/* {isAdmin && !isIframeVisible && !showUnderConstruction && (
-            <div className="p-4 flex justify-end">
-              <button
-                onClick={() => {
-                  setEditSystem(null);
-                  setShowSystemModal(true);
-                }}
-                className="bg-red-600 text-white px-4 py-2 rounded shadow"
-              >
-                + Add System
-              </button>
-            </div>
-          )} */}
-          {/* Show Home Page */}
-
           {!isIframeVisible && !showUnderConstruction && (
             <HomePage
               allUsersRef={allUsersRef}

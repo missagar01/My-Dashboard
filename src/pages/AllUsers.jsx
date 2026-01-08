@@ -29,6 +29,8 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
     const [pending, setPending] = useState(0);
     const [notDone, setNotDone] = useState(0);
     const [overdue, setOverdue] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(null);
+
 
     const handleSystemAccessPatch = async (id, value) => {
         if (!value.trim()) return;
@@ -239,37 +241,66 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                             </div>
 
                             <h3 className="text-2xl font-bold text-gray-800  p-4">Our Products</h3>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56 overflow-hidden rounded-lg group">
+                                <div
+                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56 overflow-hidden rounded-lg group"
+                                    onClick={() => setActiveIndex(activeIndex === 0 ? null : 0)}
+                                >
                                     <img
                                         src="/pipe1.jpg"
                                         alt="Steel Pipes"
                                         className="w-full h-full object-cover"
                                     />
-                                    <div className="absolute bottom-0 left-0 w-full h-1/2 bg-black/0 group-hover:bg-black/50 transition-all duration-300" />
                                     <div
-                                        className="absolute bottom-1/4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        className={`absolute bottom-0 left-0 w-full h-1/2 transition-all duration-300
+                                    ${activeIndex === 0
+                                                ? "bg-black/50"
+                                                : "bg-black/0 group-hover:bg-black/50"
+                                            }`}
+                                    />
+                                    <div
+                                        className={`absolute bottom-1/4 left-0 w-full flex justify-center transition-opacity duration-300
+                                     ${activeIndex === 0
+                                                ? "opacity-100"
+                                                : "opacity-0 group-hover:opacity-100"
+                                            }`}
+                                    >
                                         <span className="text-white text-lg md:text-xl font-semibold">
                                             MS Pipes (Circle)
                                         </span>
                                     </div>
                                 </div>
-
-                                <div className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56 overflow-hidden rounded-lg group">
+                                <div
+                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56 overflow-hidden rounded-lg group"
+                                    onClick={() => setActiveIndex(activeIndex === 1 ? null : 1)}
+                                >
                                     <img
                                         src="/pipe2.png"
                                         alt="TMT Bars"
                                         className="w-full h-full object-cover"
                                     />
-                                    <div className="absolute bottom-0 left-0 w-full h-1/2 bg-black/0 group-hover:bg-black/50 transition-all duration-300" />
 
-                                    <div className="absolute bottom-1/4 left-0 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div
+                                        className={`absolute bottom-0 left-0 w-full h-1/2 transition-all duration-300
+                                        ${activeIndex === 1
+                                                ? "bg-black/50"
+                                                : "bg-black/0 group-hover:bg-black/50"
+                                            }`}
+                                    />
+
+                                    <div
+                                        className={`absolute bottom-1/4 left-0 w-full flex justify-center transition-opacity duration-300
+                                         ${activeIndex === 1
+                                                ? "opacity-100"
+                                                : "opacity-0 group-hover:opacity-100"
+                                            }`}
+                                    >
                                         <span className="text-white text-lg md:text-xl font-semibold">
                                             MS Pipes (Square)
                                         </span>
                                     </div>
                                 </div>
+
                             </div>
 
                             <style>
