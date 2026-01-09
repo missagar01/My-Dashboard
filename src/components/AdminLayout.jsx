@@ -237,37 +237,38 @@ export default function AdminLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-2">
-
+            {/* Welcome text */}
             <div className="flex items-center gap-2 opacity-100 animate-slide-in-fade delay-500">
               <span className="inline-block animate-wave"></span>
               <span className="text-gray-700 font-medium text-sm">
                 Welcome, {username || "User"}
               </span>
-
             </div>
 
-
-            {/* {username?.toLowerCase() === "admin" ? ( */}
-            <><button
+            {/* MOBILE: Sidebar button */}
+            <button
               className="lg:hidden w-10 h-10 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <span className="text-white text-xl font-bold">☰</span>
             </button>
-              <div className="hidden lg:flex w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full items-center justify-center cursor-pointer transition"
+
+            {/* DESKTOP: Admin → Settings | User → Logout */}
+            {username?.toLowerCase() === "admin" ? (
+              <div
+                className="hidden lg:flex w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full items-center justify-center cursor-pointer transition"
                 onClick={() => setIsAdminSidebarOpen(true)}
               >
                 <Settings className="text-white w-5 h-5" />
-              </div></>
-
-            {/* // ) : ( */}
-            {/* //   <div */}
-            {/* //     onClick={handleLogout}
-            //     className="w-10 h-10 bg-red-600 hover:bg-red-900 rounded-full flex items-center justify-center cursor-pointer transition opacity-100"
-            //   >
-            //     <LogOut className="text-white w-5 h-5" />
-            //   </div> */}
-            {/* // )} */}
+              </div>
+            ) : (
+              <div
+                className="hidden lg:flex w-10 h-10 bg-red-600 hover:bg-red-700 rounded-full items-center justify-center cursor-pointer transition"
+                onClick={handleLogout}
+              >
+                <LogOut className="text-white w-5 h-5" />
+              </div>
+            )}
           </div>
         </div>
       </header >
@@ -363,8 +364,7 @@ export default function AdminLayout({ children }) {
                 </div>
               </div>
 
-              {/* ACTIONS */}
-              {isAdmin && activeRoute === "HOME" && (
+              {isAdmin && activeRoute?.toUpperCase() === "HOME" && (
                 <div className="px-5 py-4 border-t">
                   <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
                     Actions
