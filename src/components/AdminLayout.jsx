@@ -222,30 +222,54 @@ export default function AdminLayout({ children }) {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white">
       <header
-        className={`bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300 ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"
-          }`}
+        className={`bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300
+  ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"}`}
       >
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center">
-            <div className="flex items-center motion-safe:animate-float">
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="w-22 h-11"
-              />
+        <div className="flex items-center gap-4 px-4 py-2">
+
+          {/* LEFT: LOGO */}
+          <div className="flex-shrink-0">
+            <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
+          </div>
+
+          {/* CENTER: SYSTEM ACCESS LIST (SCROLLABLE TRAIN STYLE) */}
+          <div className="hidden lg:flex flex-1 overflow-x-auto scrollbar-thin scrollbar-thumb-red-400 scrollbar-track-transparent">
+            <div className="flex items-center gap-1 min-w-max">
+              {topNavRoutes
+                .filter((route) => {
+                  const routeId = route.id.toUpperCase();
+                  const usernameLower = username?.toLowerCase();
+
+                  if (usernameLower === "admin") return true;
+                  if (routeId === "HOME") return true;
+                  if (DEFAULT_SYSTEMS.includes(routeId)) return true;
+                  return systemAccessList.includes(routeId);
+                })
+                .map((route) => (
+                  <button
+                    key={route.id}
+                    onClick={() => handleRouteClick(route.url, route.id)}
+                    className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-md transition
+              ${activeRoute === route.id
+                        ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow"
+                        : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                  >
+                    {route.label}
+                  </button>
+                ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Welcome text */}
-            <div className="flex items-center gap-2 opacity-100 animate-slide-in-fade delay-500">
-              <span className="inline-block animate-wave"></span>
-              <span className="text-gray-700 font-medium text-sm">
-                Welcome, {username || "User"}
-              </span>
-            </div>
+          {/* RIGHT: USER / ICONS */}
+          <div className="ml-auto flex items-center gap-2">
 
-            {/* MOBILE: Sidebar button */}
+            {/* Welcome (mobile + desktop) */}
+            <span className="text-sm font-medium text-gray-700 lg:hidden">
+              Welcome, {username}
+            </span>
+
+            {/* MOBILE: SIDEBAR BUTTON */}
             <button
               className="lg:hidden w-10 h-10 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -253,53 +277,27 @@ export default function AdminLayout({ children }) {
               <span className="text-white text-xl font-bold">☰</span>
             </button>
 
-            {/* DESKTOP: Admin → Settings | User → Logout */}
+            {/* DESKTOP: ADMIN → SETTINGS | USER → LOGOUT */}
             {username?.toLowerCase() === "admin" ? (
-              <div
-                className="hidden lg:flex w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full items-center justify-center cursor-pointer transition"
+              <button
+                className="hidden lg:flex w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full items-center justify-center"
                 onClick={() => setIsAdminSidebarOpen(true)}
               >
                 <Settings className="text-white w-5 h-5" />
-              </div>
+              </button>
             ) : (
-              <div
-                className="hidden lg:flex w-10 h-10 bg-red-600 hover:bg-red-700 rounded-full items-center justify-center cursor-pointer transition"
+              <button
+                className="hidden lg:flex w-10 h-10 bg-red-600 hover:bg-red-700 rounded-full items-center justify-center"
                 onClick={handleLogout}
               >
                 <LogOut className="text-white w-5 h-5" />
-              </div>
+              </button>
             )}
           </div>
-        </div>
-      </header >
-
-      {/* Top Navigation Bar - Red Gradient Style */}
-      < nav className="hidden lg:block bg-gradient-to-r from-red-900 via-rose-600 to-gray-600 text-white sticky top-[64px] z-40 shadow-lg" >
-        <div className="flex items-center overflow-x-auto scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10">
-          {topNavRoutes
-            .filter((route) => {
-              const routeId = route.id.toUpperCase();
-              const usernameLower = username?.toLowerCase();
-              if (usernameLower === "admin") return true;
-
-              if (routeId === "HOME") return true;
-
-              if (DEFAULT_SYSTEMS.includes(routeId)) return true;
-
-              return systemAccessList.includes(routeId);
-            })
-            .map((route) => (
-              <button
-                key={route.id}
-                onClick={() => handleRouteClick(route.url, route.id)}
-                className={getButtonClass(route.id)}
-              >
-                {route.label}
-              </button>
-            ))}
 
         </div>
-      </nav >
+      </header>
+
 
       {/* MOBILE SIDEBAR (SYSTEMS + ADMIN ACTIONS) */}
       {

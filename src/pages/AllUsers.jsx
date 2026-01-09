@@ -446,7 +446,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                             {/* <span className="text-blue-500">📊</span> */}
                                         </div>
 
-                                        <div className="flex items-center gap-6">
+                                        <div className="flex items-center">
                                             {/* CIRCLE */}
                                             <div className="relative w-36 h-36">
                                                 <svg className="w-full h-full rotate-[-90deg]">
