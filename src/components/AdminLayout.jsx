@@ -363,7 +363,7 @@ export default function AdminLayout({ children }) {
             </div>
 
             {/* ACTIONS */}
-            {isAdmin && (
+            {isAdmin && activeRoute === "HOME" && (
               <div className="px-5 py-4 border-t">
                 <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
                   Actions
@@ -440,6 +440,7 @@ export default function AdminLayout({ children }) {
           )}
         </main>
       </div>
+
       {showSystemModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-md rounded p-6">
