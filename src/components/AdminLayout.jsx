@@ -265,7 +265,7 @@ export default function AdminLayout({ children }) {
           <div className="ml-auto flex items-center gap-2">
 
             {/* Welcome (mobile + desktop) */}
-            <span className="text-sm font-medium text-gray-700 lg:hidden">
+            <span className="text-sm font-medium text-gray-700">
               Welcome, {username}
             </span>
 
