@@ -152,7 +152,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
         : {};
 
     const filteredUsers = allUsers.filter((u) => {
-        if (u.role === "admin") return false;
+        if (u.user_name === "admin") return false;
 
         const matchesSearch =
             u.employee_id?.toString().includes(search) ||
@@ -199,51 +199,85 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                 <div className="container mx-auto px-4 md:px-8">
                     {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
                         <div className="max-w-4xl mx-auto text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white bg-red-600 inline-block px-4 py-1 opacity-70 rounded mb-6">
+                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white 
+               inline-block px-6 py-3 mb-6 rounded-xl
+               bg-red-600/60 backdrop-blur-md shadow-lg">
                                 Welcome To Sourabh Rolling Mill
+                                <div>
+                                    <p className="typing-effect text-2xl font-bold text-white leading-relaxed inline-block">
+                                        मजबूती और विश्वास है हम।
+                                    </p>
+                                </div>
                             </h2>
-                            <div>
-                                <p className="typing-effect text-2xl font-bold text-red-600 leading-relaxed inline-block">
-                                    मजबूती और विश्वास है हम।  </p>
-                            </div>
-                            <div className="max-w-4xl mx-auto text-center mb-12">
-                                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
+
+                            <div className="max-w-4xl mx-auto mb-12
+                                    bg-white/85 backdrop-blur-md
+                                    rounded-[2.5rem]
+                                    shadow-[0_20px_40px_-15px_rgba(0,0,0,0.25)]
+                                    border border-gray-200
+                                    px-6 md:px-10 py-10">
+
+                                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 text-center
+               drop-shadow-[0_6px_6px_rgba(220,38,38,0.6)]">
                                     About Us
                                 </h2>
-                                <p className="text-lg text-gray-600 leading-relaxed">
+
+
+                                <p className="text-md text-gray-700 leading-relaxed text-justify">
                                     Sourabh Rolling Mills Pvt. Ltd., a premium manufacturing unit of Pankaj Group,
                                     is located in Village Kanhera, Urla Industrial Area, Raipur, Chhattisgarh.
                                     As one of the leading companies within Pankaj Group,
                                     Sourabh Rolling Mills is synonymous with quality and innovation in the steel industry.
                                     Specializing in the production of billets, strips (Patra), and high-quality steel pipes,
                                     Sourabh Rolling Mills adheres to stringent BIS norms. Our facility boasts multiple automatic rolling mills,
-                                    ensuring efficiency and precision in our manufacturing processes. The company employs over 2,700 direct and
-                                    indirect dedicated and highly talented workforce members, fostering a culture of excellence and continuous improvement.
+                                    ensuring efficiency and precision in our manufacturing processes.
                                 </p>
+
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-                                <div className="text-center p-6 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg shadow-md">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12">
+
+                                <div className="text-center p-8
+                                    bg-gradient-to-br from-red-50 to-orange-50
+                                    rounded-[2.5rem]
+                                    shadow-[0_20px_40px_-15px_rgba(220,38,38,0.35)]
+                                    border border-red-100">
                                     <Target className="w-16 h-16 mx-auto text-red-600 mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-800 mb-3">Our Mission</h3>
-                                    <p className="text-gray-600">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-3">
+                                        Our Mission
+                                    </h3>
+                                    <p className="text-gray-600 leading-relaxed">
                                         Mission creating happiness through achievements
                                     </p>
                                 </div>
 
-                                <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-md">
+                                <div className="text-center p-8
+                  bg-gradient-to-br from-blue-50 to-indigo-50
+                  rounded-[2.5rem]
+                  shadow-[0_20px_40px_-15px_rgba(59,130,246,0.35)]
+                  border border-blue-100">
                                     <Award className="w-16 h-16 mx-auto text-blue-600 mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-800 mb-3">Our Vision</h3>
-                                    <p className="text-gray-600">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-3">
+                                        Our Vision
+                                    </h3>
+                                    <p className="text-gray-600 leading-relaxed">
                                         Vision becoming a humble man with high values and creative mind set.
                                     </p>
                                 </div>
-                                {/* </div> */}
+
                             </div>
 
+
                             <h3 className="text-2xl font-bold text-gray-800  p-4">Our Products</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+
                                 <div
-                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56 overflow-hidden rounded-lg group"
+                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56
+               overflow-hidden
+               rounded-[2.5rem]
+               shadow-[0_25px_50px_-20px_rgba(0,0,0,0.35)]
+               border border-gray-200
+               group"
                                     onClick={() => setActiveIndex(activeIndex === 0 ? null : 0)}
                                 >
                                     <img
@@ -251,16 +285,18 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                         alt="Steel Pipes"
                                         className="w-full h-full object-cover"
                                     />
+
                                     <div
                                         className={`absolute bottom-0 left-0 w-full h-1/2 transition-all duration-300
-                                    ${activeIndex === 0
+        ${activeIndex === 0
                                                 ? "bg-black/50"
                                                 : "bg-black/0 group-hover:bg-black/50"
                                             }`}
                                     />
+
                                     <div
                                         className={`absolute bottom-1/4 left-0 w-full flex justify-center transition-opacity duration-300
-                                     ${activeIndex === 0
+        ${activeIndex === 0
                                                 ? "opacity-100"
                                                 : "opacity-0 group-hover:opacity-100"
                                             }`}
@@ -270,8 +306,14 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                         </span>
                                     </div>
                                 </div>
+
                                 <div
-                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56 overflow-hidden rounded-lg group"
+                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56
+               overflow-hidden
+               rounded-[2.5rem]
+               shadow-[0_25px_50px_-20px_rgba(0,0,0,0.35)]
+               border border-gray-200
+               group"
                                     onClick={() => setActiveIndex(activeIndex === 1 ? null : 1)}
                                 >
                                     <img
@@ -282,7 +324,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                                     <div
                                         className={`absolute bottom-0 left-0 w-full h-1/2 transition-all duration-300
-                                        ${activeIndex === 1
+        ${activeIndex === 1
                                                 ? "bg-black/50"
                                                 : "bg-black/0 group-hover:bg-black/50"
                                             }`}
@@ -290,7 +332,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                                     <div
                                         className={`absolute bottom-1/4 left-0 w-full flex justify-center transition-opacity duration-300
-                                         ${activeIndex === 1
+        ${activeIndex === 1
                                                 ? "opacity-100"
                                                 : "opacity-0 group-hover:opacity-100"
                                             }`}
@@ -303,6 +345,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                             </div>
 
+
                             <style>
                                 {`
                                 .typing-effect {
@@ -314,7 +357,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                                 @keyframes typing {
                                     from { width: 0 }
-                                    to { width: 80% }
+                                    to { width: 100% }
                                 }
 
                                 @keyframes blink {

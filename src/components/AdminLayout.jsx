@@ -271,11 +271,19 @@ export default function AdminLayout({ children }) {
 
             {/* MOBILE: SIDEBAR BUTTON */}
             <button
-              className="lg:hidden w-10 h-10 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center"
               onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden w-11 h-11 rounded-xl
+            
+             flex items-center justify-center
+             active:scale-95 transition-all duration-200"
             >
-              <span className="text-white text-xl font-bold">☰</span>
+              <div className="flex flex-col gap-[5px]">
+                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-700 to-red-400"></span>
+                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-700 to-red-400"></span>
+                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-900 to-red-400"></span>
+              </div>
             </button>
+
 
             {/* DESKTOP: ADMIN → SETTINGS | USER → LOGOUT */}
             {username?.toLowerCase() === "admin" ? (
@@ -302,22 +310,28 @@ export default function AdminLayout({ children }) {
       {/* MOBILE SIDEBAR (SYSTEMS + ADMIN ACTIONS) */}
       {
         isMobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="lg:hidden fixed inset-0 z-50 flex animate-fadeIn">
             {/* Overlay */}
             <div
-              className="flex-1 bg-black/40"
+              className="flex-1 bg-black/40 backdrop-blur-sm transition-opacity"
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
             {/* Sidebar */}
-            <div className="w-80 bg-white shadow-2xl flex flex-col">
+            <div className="w-80 bg-white/90 backdrop-blur-xl
+                shadow-[0_30px_60px_-20px_rgba(0,0,0,0.35)]
+                flex flex-col
+                rounded-l-3xl
+                animate-slideInRight">
               {/* HEADER */}
-              <div className="px-5 py-4 border-b relative">
+              <div className="px-6 py-5 border-b relative bg-gradient-to-r from-red-50 to-orange-50">
 
                 {/* CLOSE ICON – TOP RIGHT */}
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded hover:bg-gray-100"
+                  className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center
+           rounded-full bg-white shadow
+           hover:bg-gray-100 active:scale-95 transition"
                 >
                   <X className="w-5 h-5 text-gray-600" />
                 </button>
@@ -350,7 +364,8 @@ export default function AdminLayout({ children }) {
                           handleRouteClick(route.url, route.id);
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`w-full px-4 py-3 rounded-md text-sm font-medium text-left transition
+                        className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left
+            transition-all duration-200
                   ${activeRoute === route.id
                             ? "bg-red-600 text-white shadow"
                             : "text-gray-700 hover:bg-gray-100"
