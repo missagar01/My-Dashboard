@@ -205,7 +205,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                 Welcome To Sourabh Rolling Mill
                                 <div>
                                     <p className="typing-effect text-2xl font-bold text-white leading-relaxed inline-block">
-                                        मजबूती और विश्वास है हम।
+                                        मजबूती और विश्वास है हम...
                                     </p>
                                 </div>
                             </h2>
