@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
 import { fetchUserDetailsApi, patchSystemAccessApi, fetchUserDetailsApiById } from "../redux/api/settingApi";
+import { patchEmpImageApi } from "../redux/api/userApi";
 import { fetchSystemsApi } from "../redux/api/systemsApi";
 import { fetchAttendanceSummaryApi } from "../redux/api/attendenceApi";
-import { Award, Target } from "lucide-react";
+import { Award, Target, Pencil } from "lucide-react";
 import {
     getPendingTodayApi,
     getCompletedTodayApi,
@@ -30,6 +31,8 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
     const [notDone, setNotDone] = useState(0);
     const [overdue, setOverdue] = useState(0);
     const [activeIndex, setActiveIndex] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
 
     const handleSystemAccessPatch = async (id, value) => {
@@ -44,6 +47,46 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
         setAllUsers(users);
     };
 
+    const handleEmpImageChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || uploading || !userDetails?.id) return;
+
+        // Basic validation (frontend safety)
+        if (!file.type.startsWith("image/")) {
+            alert("Only image files are allowed");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Image must be under 5MB");
+            return;
+        }
+
+        try {
+            setUploading(true);
+            setImageError(false);
+
+            // PATCH image
+            await patchEmpImageApi(userDetails.id, file);
+
+            // ALWAYS re-fetch user (single source of truth)
+            const freshUser = await fetchUserDetailsApiById(userDetails.id);
+
+            // Update state only if valid response
+            if (freshUser && freshUser.emp_image) {
+                setUserDetails(freshUser);
+            } else {
+                throw new Error("Image update failed");
+            }
+
+        } catch (err) {
+            console.error("Profile image upload failed:", err);
+            alert("Failed to update profile image. Please try again.");
+        } finally {
+            setUploading(false);
+            e.target.value = ""; // reset input (important)
+        }
+    };
 
     useEffect(() => {
         const fetchEmployeeDetails = async () => {
@@ -372,60 +415,128 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                     {localStorage.getItem("user-name")?.toLowerCase() !== "admin" && (
                         <div>
-                            <div className="flex flex-col-2 md:flex-row bg-gray-50 rounded-lg shadow-md overflow-hidden gap-10 items-center justify-center md:items-start md:justify-start md:text-left">
-                                <img
-                                    src={
-                                        userDetails?.employee_id
-                                            ? `/employees/${userDetails.employee_id}.jpg`
-                                            : "/user.png"
-                                    }
-                                    alt="Employee"
-                                    className="w-34 md:w-1/3 h-34 md:h-auto object-cover lg:w-48 lg:h-48"
-                                    onError={(e) => {
-                                        e.target.src = "/user.png";
-                                    }}
-                                />
+                            <div
+                                className="
+                                            flex flex-col md:flex-row
+                                            gap-6 md:gap-8
+                                            p-4 md:p-6
+                                            bg-gray-50
+                                            rounded-lg
+                                            shadow-md
+                                            items-center md:items-start
+                                        "
+                            >
+                                {/* IMAGE SECTION */}
+                                <div className="relative shrink-0">
+                                    <img
+                                        src={
+                                            !imageError && userDetails?.emp_image
+                                                ? userDetails.emp_image
+                                                : "/user.png"
+                                        }
+                                        alt="Employee"
+                                                                                className="
+                                                w-32 h-32
+                                                sm:w-36 sm:h-36
+                                                md:w-40 md:h-40
+                                                lg:w-48 lg:h-48
+                                                object-cover
+                                                rounded-lg
+                                                border
+                                                bg-gray-100
+                                            "
+                                        loading="lazy"
+                                        onError={() => setImageError(true)}
+                                    />
 
-                                <div className="flex flex-col text-sm md:text-base lg:text-base">
+                                    {/* EDIT ICON */}
+                                    <label
+                                        title="Edit profile image"
+                                        className={`
+                                                absolute bottom-2 right-2
+                                                flex items-center justify-center
+                                                w-9 h-9
+                                                rounded-full
+                                                text-white
+                                                cursor-pointer
+                                                transition
+                                                ${uploading ? "bg-gray-400" : "bg-black/70 hover:bg-black"}
+                                            `}
+                                    >
+                                        {uploading ? (
+                                            <span className="text-xs">⏳</span>
+                                        ) : (
+                                            <Pencil size={16} strokeWidth={2} />
+                                        )}
+
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            disabled={uploading}
+                                            onChange={handleEmpImageChange}
+                                        />
+                                    </label>
+                                </div>
+
+                                {/* DETAILS SECTION */}
+                                <div className="flex-1 flex flex-col text-sm md:text-base text-center md:text-left">
                                     {loading ? (
                                         <div className="space-y-3">
-                                            <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-36 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-44 animate-pulse"></div>
+                                            <div className="h-7 bg-gray-200 rounded w-48 mx-auto md:mx-0 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-40 mx-auto md:mx-0 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-44 mx-auto md:mx-0 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-36 mx-auto md:mx-0 animate-pulse"></div>
                                         </div>
                                     ) : userDetails ? (
                                         <>
                                             <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-2">
                                                 {userDetails.user_name || "N/A"}
                                             </h3>
+
                                             <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Employee ID:</span> {userDetails.employee_id || "N/A"}
+                                                <span className="font-semibold">Employee ID:</span>{" "}
+                                                {userDetails.employee_id || "N/A"}
                                             </p>
+
                                             <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Department:</span> {userDetails.user_access || "N/A"}
+                                                <span className="font-semibold">Department:</span>{" "}
+                                                {userDetails.user_access || "N/A"}
                                             </p>
+
                                             <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Phone:</span> {userDetails.number || "N/A"}
+                                                <span className="font-semibold">Phone:</span>{" "}
+                                                {userDetails.number || "N/A"}
                                             </p>
-                                            <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Email:</span> {userDetails.email_id || "N/A"}
+
+                                            <p className="text-gray-600 mb-1 break-all">
+                                                <span className="font-semibold">Email:</span>{" "}
+                                                {userDetails.email_id || "N/A"}
                                             </p>
-                                            <p className="text-gray-600 mb-1">
+
+                                            <p className="text-gray-600 mt-2">
                                                 <span className="font-semibold">Status:</span>
-                                                <span className={`ml-2 px-2 py-1 text-xs rounded-full ${userDetails.status === "active"
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-red-100 text-red-800"
-                                                    }`}>
+                                                <span
+                                                    className={`
+                                                            ml-2 px-2 py-1 text-xs rounded-full
+                                                            ${userDetails.status === "active"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-red-100 text-red-800"
+                                                        }
+                                                    `}
+                                                >
                                                     {userDetails.status || "N/A"}
                                                 </span>
                                             </p>
                                         </>
                                     ) : (
                                         <div>
-                                            <h3 className="text-2xl font-bold text-gray-800 mb-2">Employee Details</h3>
-                                            <p className="text-gray-600">Unable to load employee information</p>
+                                            <h3 className="text-xl font-bold text-gray-800 mb-2">
+                                                Employee Details
+                                            </h3>
+                                            <p className="text-gray-600">
+                                                Unable to load employee information
+                                            </p>
                                         </div>
                                     )}
                                 </div>
