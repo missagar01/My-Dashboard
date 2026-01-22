@@ -220,9 +220,13 @@ export default function AdminLayout({ children }) {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-white">
+    <div
+      className="flex flex-col h-screen overflow-hidden bg-white bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/bgImage.png')" }}
+    >
+
       <header
-        className={`bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300
+        className={`bg-white/90 border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300
   ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"}`}
       >
         <div className="flex items-center gap-4 px-4 py-2">
@@ -426,7 +430,7 @@ export default function AdminLayout({ children }) {
       {/* Main Content Layout */}
       <div className="flex flex-1 overflow-hidden">
 
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="flex-1 overflow-y-auto bg-transparent">
           {!isIframeVisible && !showUnderConstruction && (
             <HomePage
               allUsersRef={allUsersRef}

@@ -33,6 +33,13 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
     const [activeIndex, setActiveIndex] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [imageError, setImageError] = useState(false);
+    const [uploadWarning, setUploadWarning] = useState("");
+    const [uploadSuccess, setUploadSuccess] = useState("");
+
+    // Constants for file validation
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const WARN_FILE_SIZE = 3 * 1024 * 1024; // 3MB warning threshold
+    const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 
     const handleSystemAccessPatch = async (id, value) => {
@@ -51,15 +58,30 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
         const file = e.target.files?.[0];
         if (!file || uploading || !userDetails?.id) return;
 
-        // Basic validation (frontend safety)
-        if (!file.type.startsWith("image/")) {
-            alert("Only image files are allowed");
+        // Clear previous messages
+        setUploadWarning("");
+        setUploadSuccess("");
+
+        // File type validation
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+            setUploadWarning(`❌ Invalid file format. Allowed formats: JPEG, PNG, GIF, WebP`);
+            e.target.value = "";
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            alert("Image must be under 5MB");
+        // File size in MB for display
+        const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+
+        // Hard limit check
+        if (file.size > MAX_FILE_SIZE) {
+            setUploadWarning(`⚠️ File size (${fileSizeInMB}MB) exceeds maximum limit of 5MB. Please choose a smaller image.`);
+            e.target.value = "";
             return;
+        }
+
+        // Warning for large files (soft limit)
+        if (file.size > WARN_FILE_SIZE) {
+            setUploadWarning(`⚠️ File size (${fileSizeInMB}MB) is large. Consider using a smaller image for faster uploads.`);
         }
 
         try {
@@ -75,13 +97,17 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
             // Update state only if valid response
             if (freshUser && freshUser.emp_image) {
                 setUserDetails(freshUser);
+                setUploadSuccess(`✅ Profile image updated successfully!`);
+                setUploadWarning("");
+                // Clear success message after 3 seconds
+                setTimeout(() => setUploadSuccess(""), 3000);
             } else {
                 throw new Error("Image update failed");
             }
 
         } catch (err) {
             console.error("Profile image upload failed:", err);
-            alert("Failed to update profile image. Please try again.");
+            setUploadWarning(`❌ Failed to update profile image. ${err.message || "Please try again."}`);
         } finally {
             setUploading(false);
             e.target.value = ""; // reset input (important)
@@ -238,20 +264,42 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
     return (
         <div className="w-full">
-            <section className="py-4 md:py-4 bg-white">
+            <section className="py-4 md:py-4 bg-transparent">
                 <div className="container mx-auto px-4 md:px-8">
                     {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
                         <div className="max-w-4xl mx-auto text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white 
-               inline-block px-6 py-3 mb-6 rounded-xl
-               bg-red-600/60 backdrop-blur-md shadow-lg">
-                                Welcome To Sourabh Rolling Mill
-                                <div>
-                                    <p className="typing-effect text-2xl font-bold text-white leading-relaxed inline-block">
-                                        मजबूती और विश्वास है हम...
-                                    </p>
-                                </div>
-                            </h2>
+                           <h2
+  className="
+    text-3xl md:text-4xl lg:text-4xl font-extrabold
+    inline-block px-6 py-3 mb-6 rounded-xl
+    bg-clip-text text-transparent
+    bg-gradient-to-r from-red-600 to-white
+    drop-shadow-[0_4px_12px_rgba(153,27,27,0.85)]
+
+
+  "
+  style={{
+    backgroundImage: "url('/transPipe.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }}
+>
+  Welcome To Sourabh Rolling Mill
+
+  <div>
+    <p
+      className="
+        typing-effect text-2xl font-bold leading-relaxed inline-block
+        bg-clip-text text-transparent
+        bg-gradient-to-r from-red-600 to-red-400
+        drop-shadow-[0_3px_8px_rgba(0,0,0,0.8)]
+      "
+    >
+      मजबूती और विश्वास है हम...
+    </p>
+  </div>
+</h2>
+
 
                             <div className="max-w-4xl mx-auto mb-12
                                     bg-white/85 backdrop-blur-md
@@ -479,6 +527,20 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                     </label>
                                 </div>
 
+                                {/* WARNING/SUCCESS MESSAGES */}
+                                <div className="w-full md:w-auto">
+                                    {uploadWarning && (
+                                        <div className="mb-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm animate-pulse">
+                                            <p className="font-medium">{uploadWarning}</p>
+                                        </div>
+                                    )}
+                                    {uploadSuccess && (
+                                        <div className="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+                                            <p className="font-medium">{uploadSuccess}</p>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* DETAILS SECTION */}
                                 <div className="flex-1 flex flex-col text-sm md:text-base text-center md:text-left">
                                     {loading ? (
@@ -543,7 +605,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                             </div>
 
                             <div className="grid grid-cols-2 gap-2 mt-4">
-                                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                                <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
                                     <div className="p-6 text-center">
                                         <h3 className="text-md font-bold text-gray-800 mb-2">
                                             Today's Tasks
@@ -555,7 +617,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                     </div>
                                 </div>
 
-                                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                                <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
                                     <div className="p-6 text-center">
                                         <h3 className="text-md font-bold text-gray-800 mb-2">
                                             Attendance
@@ -591,8 +653,8 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                             </div>
 
-                            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                            <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
+                                <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
                                     <div className="p-3">
                                         {/* Header */}
                                         <div className="flex justify-between items-center mb-4">
@@ -726,7 +788,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                 <div ref={allUsersRef}>
                                     {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
                                         <div className="w-full">
-                                            <div className="bg-gray-50 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
+                                            <div className="bg-white/60 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
                                                 {/* <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
                                                     All Users ({filteredUsers.length})
                                                 </h1> */}
