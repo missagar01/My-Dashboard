@@ -56,6 +56,7 @@ export default function AdminLayout({ children }) {
   });
   const [systemAccessList, setSystemAccessList] = useState([]);
   const [isAdminSidebarOpen, setIsAdminSidebarOpen] = useState(false);
+  const [showAllUsersModal, setShowAllUsersModal] = useState(false);
   const allUsersRef = useRef(null);
 
 
@@ -219,90 +220,25 @@ export default function AdminLayout({ children }) {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-white">
+    <div
+      className="flex flex-col h-screen overflow-hidden bg-white bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/bgImage.png')" }}
+    >
+
       <header
-        className={`bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300 ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"
-          }`}
+        className={`bg-white/90 border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300
+  ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"}`}
       >
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Logo with floating animation */}
-          <div className="flex items-center">
-            <div className="flex items-center motion-safe:animate-float">
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="w-22 h-11"
-              />
-            </div>
+        <div className="flex items-center gap-4 px-4 py-2">
+
+          {/* LEFT: LOGO */}
+          <div className="flex-shrink-0">
+            <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
           </div>
 
-          {/* User Avatar with emoji animation */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 opacity-100 animate-slide-in-fade delay-500">
-              <span className="inline-block animate-wave"></span>
-              <span className="text-gray-700 font-medium text-sm">
-                Welcome, {username || "User"}
-              </span>
-            </div>
-
-            {username?.toLowerCase() === "admin" ? (
-              <div
-                className="w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full flex items-center justify-center cursor-pointer transition opacity-100 "
-                onClick={() => setIsAdminSidebarOpen(true)}
-              >
-                <Settings className="text-white w-5 h-5" />
-              </div>
-            ) : (
-              <div
-                onClick={handleLogout}
-                className="w-10 h-10 bg-red-600 hover:bg-red-900 rounded-full flex items-center justify-center cursor-pointer transition opacity-100"
-              >
-                <LogOut className="text-white w-5 h-5" />
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Top Navigation Bar - Red Gradient Style */}
-      <nav className="bg-gradient-to-r from-red-900 via-rose-600 to-gray-600 text-white sticky top-[64px] z-40 shadow-lg">
-        <div className="flex items-center overflow-x-auto scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-white/10">
-          {topNavRoutes
-            .filter((route) => {
-              const routeId = route.id.toUpperCase();
-              const usernameLower = username?.toLowerCase();
-              if (usernameLower === "admin") return true;
-
-              if (routeId === "HOME") return true;
-
-              if (DEFAULT_SYSTEMS.includes(routeId)) return true;
-
-              return systemAccessList.includes(routeId);
-            })
-            .map((route) => (
-              <button
-                key={route.id}
-                onClick={() => handleRouteClick(route.url, route.id)}
-                className={getButtonClass(route.id)}
-              >
-                {route.label}
-              </button>
-            ))}
-
-        </div>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="absolute top-0 right-0 w-80 h-full bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <span className="font-bold text-lg">Menu</span>
-              <button onClick={() => setIsMobileMenuOpen(false)}>
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="p-4 space-y-2">
+          {/* CENTER: SYSTEM ACCESS LIST (SCROLLABLE TRAIN STYLE) */}
+          <div className="hidden lg:flex flex-1 overflow-x-auto scrollbar-thin scrollbar-thumb-red-400 scrollbar-track-transparent">
+            <div className="flex items-center gap-1 min-w-max">
               {topNavRoutes
                 .filter((route) => {
                   const routeId = route.id.toUpperCase();
@@ -311,52 +247,198 @@ export default function AdminLayout({ children }) {
                   if (usernameLower === "admin") return true;
                   if (routeId === "HOME") return true;
                   if (DEFAULT_SYSTEMS.includes(routeId)) return true;
-
                   return systemAccessList.includes(routeId);
                 })
                 .map((route) => (
                   <button
                     key={route.id}
-                    onClick={() => {
-                      handleRouteClick(route.url, route.id);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 rounded hover:bg-gray-100 ${activeRoute === route.id
-                      ? "bg-gradient-to-r from-red-500 to-gray-500 text-white"
-                      : ""
+                    onClick={() => handleRouteClick(route.url, route.id)}
+                    className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-md transition
+              ${activeRoute === route.id
+                        ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow"
+                        : "text-gray-700 hover:bg-gray-100"
                       }`}
                   >
                     {route.label}
                   </button>
                 ))}
-
             </div>
           </div>
+
+          {/* RIGHT: USER / ICONS */}
+          <div className="ml-auto flex items-center gap-2">
+
+            {/* Welcome (mobile + desktop) */}
+            <span className="text-sm font-medium text-gray-700">
+              Welcome, {username}
+            </span>
+
+            {/* MOBILE: SIDEBAR BUTTON */}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden w-11 h-11 rounded-xl
+            
+             flex items-center justify-center
+             active:scale-95 transition-all duration-200"
+            >
+              <div className="flex flex-col gap-[5px]">
+                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-700 to-red-400"></span>
+                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-700 to-red-400"></span>
+                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-900 to-red-400"></span>
+              </div>
+            </button>
+
+
+            {/* DESKTOP: ADMIN → SETTINGS | USER → LOGOUT */}
+            {username?.toLowerCase() === "admin" ? (
+              <button
+                className="hidden lg:flex w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full items-center justify-center"
+                onClick={() => setIsAdminSidebarOpen(true)}
+              >
+                <Settings className="text-white w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                className="hidden lg:flex w-10 h-10 bg-red-600 hover:bg-red-700 rounded-full items-center justify-center"
+                onClick={handleLogout}
+              >
+                <LogOut className="text-white w-5 h-5" />
+              </button>
+            )}
+          </div>
+
         </div>
-      )}
+      </header>
+
+
+      {/* MOBILE SIDEBAR (SYSTEMS + ADMIN ACTIONS) */}
+      {
+        isMobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 flex animate-fadeIn">
+            {/* Overlay */}
+            <div
+              className="flex-1 bg-black/40 backdrop-blur-sm transition-opacity"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+
+            {/* Sidebar */}
+            <div className="w-80 bg-white/90 backdrop-blur-xl
+                shadow-[0_30px_60px_-20px_rgba(0,0,0,0.35)]
+                flex flex-col
+                rounded-l-3xl
+                animate-slideInRight">
+              {/* HEADER */}
+              <div className="px-6 py-5 border-b relative bg-gradient-to-r from-red-50 to-orange-50">
+
+                {/* CLOSE ICON – TOP RIGHT */}
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center
+           rounded-full bg-white shadow
+           hover:bg-gray-100 active:scale-95 transition"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+
+                <p className="text-xs text-gray-500">Welcome</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {username}
+                </p>
+              </div>
+
+              {/* SYSTEMS */}
+              <div className="px-5 py-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
+                  Systems
+                </p>
+
+                <div className="space-y-1">
+                  {topNavRoutes
+                    .filter((route) => {
+                      const routeId = route.id.toUpperCase();
+                      if (routeId === "HOME") return true;
+                      if (isAdmin) return routeId !== "HOME";
+                      if (DEFAULT_SYSTEMS.includes(routeId)) return true;
+                      return systemAccessList.includes(routeId);
+                    })
+                    .map((route) => (
+                      <button
+                        key={route.id}
+                        onClick={() => {
+                          handleRouteClick(route.url, route.id);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left
+            transition-all duration-200
+                  ${activeRoute === route.id
+                            ? "bg-red-600 text-white shadow"
+                            : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                      >
+                        {route.label}
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              {isAdmin && activeRoute?.toUpperCase() === "HOME" && (
+                <div className="px-5 py-4 border-t">
+                  <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
+                    Actions
+                  </p>
+
+                  <button
+                    onClick={() => {
+                      setShowAllUsersModal(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    Show All Users
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setEditSystem(null);
+                      setShowSystemModal(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    Add / Edit Systems
+                  </button>
+                </div>
+              )}
+
+              {/* LOGOUT */}
+              <div className="mt-auto px-5 py-4 border-t">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-3 rounded-md text-red-600 hover:bg-red-50 font-medium"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+
 
       {/* Main Content Layout */}
       <div className="flex flex-1 overflow-hidden">
 
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="flex-1 overflow-y-auto bg-transparent">
+          {!isIframeVisible && !showUnderConstruction && (
+            <HomePage
+              allUsersRef={allUsersRef}
+              showAllUsersModal={showAllUsersModal}
+              setShowAllUsersModal={setShowAllUsersModal}
+            />
+          )}
 
-          {/* {isAdmin && !isIframeVisible && !showUnderConstruction && (
-            <div className="p-4 flex justify-end">
-              <button
-                onClick={() => {
-                  setEditSystem(null);
-                  setShowSystemModal(true);
-                }}
-                className="bg-red-600 text-white px-4 py-2 rounded shadow"
-              >
-                + Add System
-              </button>
-            </div>
-          )} */}
-          {/* Show Home Page */}
-          {!isIframeVisible && !showUnderConstruction && <HomePage allUsersRef={allUsersRef} />}
-          <div id="all-users-section">
-          </div>
           {/* Show Under Construction */}
           {showUnderConstruction && <UnderConstruction />}
 
@@ -377,299 +459,307 @@ export default function AdminLayout({ children }) {
           )}
         </main>
       </div>
-      {showSystemModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded p-6">
-            <h2 className="text-xl font-bold mb-4">
-              {editSystem ? "Edit System" : "Add System"}
-            </h2>
 
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setIsSavingSystem(true);
-
-                try {
-                  const systems = e.target.systems.value.trim();
-                  const linkValue = e.target.link?.value?.trim();
-
-                  const payload = {
-                    systems,
-                    ...(linkValue ? { link: linkValue } : { link: null }),
-                  };
-
-                  if (editSystem) {
-                    await updateSystemApi(editSystem.id, payload);
-                    showToast("System updated");
-                  } else {
-                    await createSystemApi(payload);
-                    showToast("System added");
-                  }
-
-                  setShowSystemModal(false);
-                  setEditSystem(null);
-                  await loadSystems();
-                } catch (err) {
-                  showToast("Action failed", "error");
-                } finally {
-                  setIsSavingSystem(false);
-                }
-              }}
-              className="space-y-4"
-            >
-              <input
-                name="systems"
-                defaultValue={editSystem?.systems || ""}
-                placeholder="System Name"
-                className="w-full border p-2 rounded"
-                required
-              />
-
-              <input
-                name="link"
-                defaultValue={editSystem?.link || ""}
-                placeholder="System Link"
-                className="w-full border p-2 rounded"
-              />
-
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowSystemModal(false)}
-                  className="px-4 py-2 border rounded"
-                  disabled={isSavingSystem}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSavingSystem}
-                  className={`px-4 py-2 rounded text-white flex items-center gap-2
-        ${isSavingSystem ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"}
-      `}
-                >
-                  {isSavingSystem && (
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  )}
-                  Save
-                </button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      )
-      }
-
-      {showSystemModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-2xl rounded p-6 overflow-y-auto max-h-[90vh]">
-
-            {/* HEADER */}
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">
-                {editSystem ? "Edit System" : "Manage Systems"}
+      {
+        showSystemModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white w-full max-w-md rounded p-6">
+              <h2 className="text-xl font-bold mb-4">
+                {editSystem ? "Edit System" : "Add System"}
               </h2>
-              <button onClick={() => setShowSystemModal(false)}>
-                <X />
-              </button>
-            </div>
 
-            {/* FORM */}
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setIsSavingSystem(true);
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSavingSystem(true);
 
-                try {
-                  const systems = e.target.systems.value.trim();
-                  const linkValue = e.target.link?.value?.trim();
+                  try {
+                    const systems = e.target.systems.value.trim();
+                    const linkValue = e.target.link?.value?.trim();
 
-                  const payload = {
-                    systems,
-                    ...(linkValue ? { link: linkValue } : { link: null }),
-                  };
+                    const payload = {
+                      systems,
+                      ...(linkValue ? { link: linkValue } : { link: null }),
+                    };
 
-                  if (editSystem) {
-                    await updateSystemApi(editSystem.id, payload);
-                    showToast("System updated");
-                  } else {
-                    await createSystemApi(payload);
-                    showToast("System added");
+                    if (editSystem) {
+                      await updateSystemApi(editSystem.id, payload);
+                      showToast("System updated");
+                    } else {
+                      await createSystemApi(payload);
+                      showToast("System added");
+                    }
+
+                    setShowSystemModal(false);
+                    setEditSystem(null);
+                    await loadSystems();
+                  } catch (err) {
+                    showToast("Action failed", "error");
+                  } finally {
+                    setIsSavingSystem(false);
                   }
+                }}
+                className="space-y-4"
+              >
+                <input
+                  name="systems"
+                  defaultValue={editSystem?.systems || ""}
+                  placeholder="System Name"
+                  className="w-full border p-2 rounded"
+                  required
+                />
 
-                  e.target.reset();
-                  setEditSystem(null);
-                  await loadSystems();
-                } catch (err) {
-                  showToast("Action failed", "error");
-                } finally {
-                  setIsSavingSystem(false);
-                }
-              }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
-            >
-              <input
-                name="systems"
-                defaultValue={editSystem?.systems || ""}
-                placeholder="System Name"
-                className="border p-2 rounded"
-                required
-              />
+                <input
+                  name="link"
+                  defaultValue={editSystem?.link || ""}
+                  placeholder="System Link"
+                  className="w-full border p-2 rounded"
+                />
 
-              <input
-                name="link"
-                defaultValue={editSystem?.link || ""}
-                placeholder="System Link"
-                className="border p-2 rounded"
-              />
-
-              <div className="md:col-span-2 flex justify-end gap-3">
-                {editSystem && (
+                <div className="flex justify-end gap-3">
                   <button
                     type="button"
-                    onClick={() => setEditSystem(null)}
+                    onClick={() => setShowSystemModal(false)}
                     className="px-4 py-2 border rounded"
                     disabled={isSavingSystem}
                   >
-                    Cancel Edit
+                    Cancel
                   </button>
-                )}
 
-                <button
-                  type="submit"
-                  disabled={isSavingSystem}
-                  className={`px-4 py-2 rounded text-white flex items-center gap-2
+                  <button
+                    type="submit"
+                    disabled={isSavingSystem}
+                    className={`px-4 py-2 rounded text-white flex items-center gap-2
         ${isSavingSystem ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"}
       `}
-                >
-                  {isSavingSystem && (
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {editSystem ? "Update" : "Add"}
-                </button>
-              </div>
-            </form>
+                  >
+                    {isSavingSystem && (
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    )}
+                    Save
+                  </button>
+                </div>
+              </form>
 
-
-            {/* SYSTEM LIST */}
-            <table className="w-full border">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 text-left">System</th>
-                  <th className="p-2 text-left">Link</th>
-                  <th className="p-2 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {systems.map((s) => (
-                  <tr key={s.id} className="border-t">
-                    <td className="p-2">{s.systems}</td>
-                    <td className="p-2 text-blue-600 underline">
-                      <a href={s.link} target="_blank" rel="noreferrer">
-                        {s.link}
-                      </a>
-                    </td>
-                    <td className="p-2 text-center space-x-3">
-                      <button
-                        onClick={() => setEditSystem(s)}
-                        className="text-blue-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (confirm("Delete this system?")) {
-                            await deleteSystemApi(s.id);
-                            loadSystems();
-                          }
-                        }}
-                        className="text-red-600"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
+            </div>
           </div>
-        </div>
-      )
+        )
       }
 
-      {toast.show && (
-        <div
-          className={`fixed top-5 right-5 z-[9999] px-4 py-2 rounded shadow-lg text-white text-sm
+      {
+        showSystemModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white w-full max-w-2xl rounded p-6 overflow-y-auto max-h-[90vh]">
+
+              {/* HEADER */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">
+                  {editSystem ? "Edit System" : "Manage Systems"}
+                </h2>
+                <button onClick={() => setShowSystemModal(false)}>
+                  <X />
+                </button>
+              </div>
+
+              {/* FORM */}
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSavingSystem(true);
+
+                  try {
+                    const systems = e.target.systems.value.trim();
+                    const linkValue = e.target.link?.value?.trim();
+
+                    const payload = {
+                      systems,
+                      ...(linkValue ? { link: linkValue } : { link: null }),
+                    };
+
+                    if (editSystem) {
+                      await updateSystemApi(editSystem.id, payload);
+                      showToast("System updated");
+                    } else {
+                      await createSystemApi(payload);
+                      showToast("System added");
+                    }
+
+                    e.target.reset();
+                    setEditSystem(null);
+                    await loadSystems();
+                  } catch (err) {
+                    showToast("Action failed", "error");
+                  } finally {
+                    setIsSavingSystem(false);
+                  }
+                }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+              >
+                <input
+                  name="systems"
+                  defaultValue={editSystem?.systems || ""}
+                  placeholder="System Name"
+                  className="border p-2 rounded"
+                  required
+                />
+
+                <input
+                  name="link"
+                  defaultValue={editSystem?.link || ""}
+                  placeholder="System Link"
+                  className="border p-2 rounded"
+                />
+
+                <div className="md:col-span-2 flex justify-end gap-3">
+                  {editSystem && (
+                    <button
+                      type="button"
+                      onClick={() => setEditSystem(null)}
+                      className="px-4 py-2 border rounded"
+                      disabled={isSavingSystem}
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSavingSystem}
+                    className={`px-4 py-2 rounded text-white flex items-center gap-2
+        ${isSavingSystem ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"}
+      `}
+                  >
+                    {isSavingSystem && (
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    )}
+                    {editSystem ? "Update" : "Add"}
+                  </button>
+                </div>
+              </form>
+
+
+              {/* SYSTEM LIST */}
+              <table className="w-full border">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-2 text-left">System</th>
+                    <th className="p-2 text-left">Link</th>
+                    <th className="p-2 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {systems.map((s) => (
+                    <tr key={s.id} className="border-t">
+                      <td className="p-2">{s.systems}</td>
+                      <td className="p-2 text-blue-600 underline">
+                        <a href={s.link} target="_blank" rel="noreferrer">
+                          {s.link}
+                        </a>
+                      </td>
+                      <td className="p-2 text-center space-x-3">
+                        <button
+                          onClick={() => setEditSystem(s)}
+                          className="text-blue-600"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm("Delete this system?")) {
+                              await deleteSystemApi(s.id);
+                              loadSystems();
+                            }
+                          }}
+                          className="text-red-600"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+            </div>
+          </div>
+        )
+      }
+
+      {
+        toast.show && (
+          <div
+            className={`fixed top-5 right-5 z-[9999] px-4 py-2 rounded shadow-lg text-white text-sm
       ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}
     `}
-        >
-          {toast.message}
-        </div>
-      )}
-
-      {isAdminSidebarOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Overlay */}
-          <div
-            className="flex-1 bg-black/50"
-            onClick={() => setIsAdminSidebarOpen(false)}
-          />
-
-          {/* Sidebar */}
-          <div className="w-72 bg-white shadow-xl p-5 flex flex-col">
-            <h2 className="text-lg font-bold mb-6 border-b pb-3">
-              Admin Settings
-            </h2>
-
-            {/* All Users */}
-            <button
-              onClick={() => {
-                setActiveRoute("HOME");
-                setIsIframeVisible(false);
-                setShowUnderConstruction(false);
-                setCurrentUrl("");
-                setIsAdminSidebarOpen(false);
-
-                requestAnimationFrame(() => {
-                  allUsersRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                });
-              }}
-              className="text-left px-4 py-3 rounded hover:bg-gray-100 font-medium"
-            >
-              Show All Users
-            </button>
-
-            {/* Add / Edit Systems */}
-            <button
-              onClick={() => {
-                setEditSystem(null);
-                setShowSystemModal(true);
-                setIsAdminSidebarOpen(false);
-              }}
-              className="text-left px-4 py-3 rounded hover:bg-gray-100 font-medium"
-            >
-              Add / Edit Systems
-            </button>
-
-            <div className="flex-1" />
-
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-3 text-red-600 hover:bg-red-50 rounded font-medium"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
+          >
+            {toast.message}
           </div>
-        </div>
-      )}
+        )
+      }
+
+      {
+        isAdminSidebarOpen && (
+          <div className="fixed inset-0 z-50 flex">
+            {/* Overlay */}
+            <div
+              className="flex-1 bg-black/50"
+              onClick={() => setIsAdminSidebarOpen(false)}
+            />
+
+            {/* Sidebar */}
+            <div className="w-72 bg-white shadow-xl p-5 flex flex-col">
+              <h2 className="text-lg font-bold mb-6 border-b pb-3">
+                Admin Settings
+              </h2>
+
+              {/* All Users */}
+              <button
+                onClick={() => {
+                  // setActiveRoute("HOME");
+                  // setIsIframeVisible(false);
+                  // setShowUnderConstruction(false);
+                  // setCurrentUrl("");
+                  setShowAllUsersModal(true);
+                  setIsAdminSidebarOpen(false);
+
+                  requestAnimationFrame(() => {
+                    allUsersRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  });
+                }}
+                className="text-left px-4 py-3 rounded hover:bg-gray-100 font-medium"
+              >
+                Show All Users
+              </button>
+
+              {/* Add / Edit Systems */}
+              <button
+                onClick={() => {
+                  setEditSystem(null);
+                  setShowSystemModal(true);
+                  setIsAdminSidebarOpen(false);
+                }}
+                className="text-left px-4 py-3 rounded hover:bg-gray-100 font-medium"
+              >
+                Add / Edit Systems
+              </button>
+
+              <div className="flex-1" />
+
+              {/* Logout */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-3 text-red-600 hover:bg-red-50 rounded font-medium"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          </div>
+        )
+      }
 
     </div >
   )

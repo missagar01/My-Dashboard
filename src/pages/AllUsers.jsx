@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
 import { fetchUserDetailsApi, patchSystemAccessApi, fetchUserDetailsApiById } from "../redux/api/settingApi";
+import { patchEmpImageApi } from "../redux/api/userApi";
 import { fetchSystemsApi } from "../redux/api/systemsApi";
 import { fetchAttendanceSummaryApi } from "../redux/api/attendenceApi";
-import { Award, Target } from "lucide-react";
+import { Award, Target, Pencil } from "lucide-react";
 import {
     getPendingTodayApi,
     getCompletedTodayApi,
@@ -13,7 +14,8 @@ import {
 } from "../redux/api/dashboardApi";
 
 
-const HomePage = ({ allUsersRef }) => {
+const HomePage = ({ allUsersRef, showAllUsersModal,
+    setShowAllUsersModal, }) => {
     const [userDetails, setUserDetails] = useState(null);
     const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true)
@@ -28,6 +30,17 @@ const HomePage = ({ allUsersRef }) => {
     const [pending, setPending] = useState(0);
     const [notDone, setNotDone] = useState(0);
     const [overdue, setOverdue] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [imageError, setImageError] = useState(false);
+    const [uploadWarning, setUploadWarning] = useState("");
+    const [uploadSuccess, setUploadSuccess] = useState("");
+
+    // Constants for file validation
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const WARN_FILE_SIZE = 3 * 1024 * 1024; // 3MB warning threshold
+    const ALLOWED_FORMATS = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+
 
     const handleSystemAccessPatch = async (id, value) => {
         if (!value.trim()) return;
@@ -41,6 +54,65 @@ const HomePage = ({ allUsersRef }) => {
         setAllUsers(users);
     };
 
+    const handleEmpImageChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || uploading || !userDetails?.id) return;
+
+        // Clear previous messages
+        setUploadWarning("");
+        setUploadSuccess("");
+
+        // File type validation
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+            setUploadWarning(`❌ Invalid file format. Allowed formats: JPEG, PNG, GIF, WebP`);
+            e.target.value = "";
+            return;
+        }
+
+        // File size in MB for display
+        const fileSizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+
+        // Hard limit check
+        if (file.size > MAX_FILE_SIZE) {
+            setUploadWarning(`⚠️ File size (${fileSizeInMB}MB) exceeds maximum limit of 5MB. Please choose a smaller image.`);
+            e.target.value = "";
+            return;
+        }
+
+        // Warning for large files (soft limit)
+        if (file.size > WARN_FILE_SIZE) {
+            setUploadWarning(`⚠️ File size (${fileSizeInMB}MB) is large. Consider using a smaller image for faster uploads.`);
+        }
+
+        try {
+            setUploading(true);
+            setImageError(false);
+
+            // PATCH image
+            await patchEmpImageApi(userDetails.id, file);
+
+            // ALWAYS re-fetch user (single source of truth)
+            const freshUser = await fetchUserDetailsApiById(userDetails.id);
+
+            // Update state only if valid response
+            if (freshUser && freshUser.emp_image) {
+                setUserDetails(freshUser);
+                setUploadSuccess(`✅ Profile image updated successfully!`);
+                setUploadWarning("");
+                // Clear success message after 3 seconds
+                setTimeout(() => setUploadSuccess(""), 3000);
+            } else {
+                throw new Error("Image update failed");
+            }
+
+        } catch (err) {
+            console.error("Profile image upload failed:", err);
+            setUploadWarning(`❌ Failed to update profile image. ${err.message || "Please try again."}`);
+        } finally {
+            setUploading(false);
+            e.target.value = ""; // reset input (important)
+        }
+    };
 
     useEffect(() => {
         const fetchEmployeeDetails = async () => {
@@ -149,7 +221,7 @@ const HomePage = ({ allUsersRef }) => {
         : {};
 
     const filteredUsers = allUsers.filter((u) => {
-        if (u.role === "admin") return false;
+        if (u.user_name === "admin") return false;
 
         const matchesSearch =
             u.employee_id?.toString().includes(search) ||
@@ -192,49 +264,179 @@ const HomePage = ({ allUsersRef }) => {
 
     return (
         <div className="w-full">
-            <section className="py-4 md:py-4 bg-white">
+            <section className="py-4 md:py-4 bg-transparent">
                 <div className="container mx-auto px-4 md:px-8">
                     {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
                         <div className="max-w-4xl mx-auto text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white bg-red-600 inline-block px-4 py-1 opacity-70 rounded mb-6">
-                                Welcome To Sourabh Rolling Mill
-                            </h2>
-                            <div>
-                                <p className="typing-effect text-2xl font-bold text-red-600 leading-relaxed inline-block">
-                                    मजबूती और विश्वास है हम।  </p>
-                            </div>
-                            <div className="max-w-4xl mx-auto text-center mb-12">
-                                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
+                           <h2
+  className="
+    text-3xl md:text-4xl lg:text-4xl font-extrabold
+    inline-block px-6 py-3 mb-6 rounded-xl
+    bg-clip-text text-transparent
+    bg-gradient-to-r from-red-600 to-white
+    drop-shadow-[0_4px_12px_rgba(153,27,27,0.85)]
+
+
+  "
+  style={{
+    backgroundImage: "url('/transPipe.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }}
+>
+  Welcome To Sourabh Rolling Mill
+
+  <div>
+    <p
+      className="
+        typing-effect text-2xl font-bold leading-relaxed inline-block
+        bg-clip-text text-transparent
+        bg-gradient-to-r from-red-600 to-red-400
+        drop-shadow-[0_3px_8px_rgba(0,0,0,0.8)]
+      "
+    >
+      मजबूती और विश्वास है हम...
+    </p>
+  </div>
+</h2>
+
+
+                            <div className="max-w-4xl mx-auto mb-12
+                                    bg-white/85 backdrop-blur-md
+                                    rounded-[2.5rem]
+                                    shadow-[0_20px_40px_-15px_rgba(0,0,0,0.25)]
+                                    border border-gray-200
+                                    px-6 md:px-10 py-10">
+
+                                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 text-center
+               drop-shadow-[0_6px_6px_rgba(220,38,38,0.6)]">
                                     About Us
                                 </h2>
-                                <p className="text-lg text-gray-600 leading-relaxed">
+
+
+                                <p className="text-md text-gray-700 leading-relaxed text-justify">
                                     Sourabh Rolling Mills Pvt. Ltd., a premium manufacturing unit of Pankaj Group,
                                     is located in Village Kanhera, Urla Industrial Area, Raipur, Chhattisgarh.
                                     As one of the leading companies within Pankaj Group,
                                     Sourabh Rolling Mills is synonymous with quality and innovation in the steel industry.
                                     Specializing in the production of billets, strips (Patra), and high-quality steel pipes,
                                     Sourabh Rolling Mills adheres to stringent BIS norms. Our facility boasts multiple automatic rolling mills,
-                                    ensuring efficiency and precision in our manufacturing processes. The company employs over 2,700 direct and
-                                    indirect dedicated and highly talented workforce members, fostering a culture of excellence and continuous improvement.
+                                    ensuring efficiency and precision in our manufacturing processes.
                                 </p>
+
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-                                <div className="text-center p-6 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg shadow-md">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12">
+
+                                <div className="text-center p-8
+                                    bg-gradient-to-br from-red-50 to-orange-50
+                                    rounded-[2.5rem]
+                                    shadow-[0_20px_40px_-15px_rgba(220,38,38,0.35)]
+                                    border border-red-100">
                                     <Target className="w-16 h-16 mx-auto text-red-600 mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-800 mb-3">Our Mission</h3>
-                                    <p className="text-gray-600">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-3">
+                                        Our Mission
+                                    </h3>
+                                    <p className="text-gray-600 leading-relaxed">
                                         Mission creating happiness through achievements
                                     </p>
                                 </div>
 
-                                <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-md">
+                                <div className="text-center p-8
+                  bg-gradient-to-br from-blue-50 to-indigo-50
+                  rounded-[2.5rem]
+                  shadow-[0_20px_40px_-15px_rgba(59,130,246,0.35)]
+                  border border-blue-100">
                                     <Award className="w-16 h-16 mx-auto text-blue-600 mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-800 mb-3">Our Vision</h3>
-                                    <p className="text-gray-600">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-3">
+                                        Our Vision
+                                    </h3>
+                                    <p className="text-gray-600 leading-relaxed">
                                         Vision becoming a humble man with high values and creative mind set.
                                     </p>
                                 </div>
+
                             </div>
+
+
+                            <h3 className="text-2xl font-bold text-gray-800  p-4">Our Products</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+
+                                <div
+                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56
+               overflow-hidden
+               rounded-[2.5rem]
+               shadow-[0_25px_50px_-20px_rgba(0,0,0,0.35)]
+               border border-gray-200
+               group"
+                                    onClick={() => setActiveIndex(activeIndex === 0 ? null : 0)}
+                                >
+                                    <img
+                                        src="/pipe1.jpg"
+                                        alt="Steel Pipes"
+                                        className="w-full h-full object-cover"
+                                    />
+
+                                    <div
+                                        className={`absolute bottom-0 left-0 w-full h-1/2 transition-all duration-300
+        ${activeIndex === 0
+                                                ? "bg-black/50"
+                                                : "bg-black/0 group-hover:bg-black/50"
+                                            }`}
+                                    />
+
+                                    <div
+                                        className={`absolute bottom-1/4 left-0 w-full flex justify-center transition-opacity duration-300
+        ${activeIndex === 0
+                                                ? "opacity-100"
+                                                : "opacity-0 group-hover:opacity-100"
+                                            }`}
+                                    >
+                                        <span className="text-white text-lg md:text-xl font-semibold">
+                                            MS Pipes (Circle)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className="relative w-full h-48 sm:h-56 md:h-48 lg:h-56
+               overflow-hidden
+               rounded-[2.5rem]
+               shadow-[0_25px_50px_-20px_rgba(0,0,0,0.35)]
+               border border-gray-200
+               group"
+                                    onClick={() => setActiveIndex(activeIndex === 1 ? null : 1)}
+                                >
+                                    <img
+                                        src="/pipe2.png"
+                                        alt="TMT Bars"
+                                        className="w-full h-full object-cover"
+                                    />
+
+                                    <div
+                                        className={`absolute bottom-0 left-0 w-full h-1/2 transition-all duration-300
+        ${activeIndex === 1
+                                                ? "bg-black/50"
+                                                : "bg-black/0 group-hover:bg-black/50"
+                                            }`}
+                                    />
+
+                                    <div
+                                        className={`absolute bottom-1/4 left-0 w-full flex justify-center transition-opacity duration-300
+        ${activeIndex === 1
+                                                ? "opacity-100"
+                                                : "opacity-0 group-hover:opacity-100"
+                                            }`}
+                                    >
+                                        <span className="text-white text-lg md:text-xl font-semibold">
+                                            MS Pipes (Square)
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
                             <style>
                                 {`
                                 .typing-effect {
@@ -246,7 +448,7 @@ const HomePage = ({ allUsersRef }) => {
 
                                 @keyframes typing {
                                     from { width: 0 }
-                                    to { width: 80% }
+                                    to { width: 100% }
                                 }
 
                                 @keyframes blink {
@@ -261,67 +463,149 @@ const HomePage = ({ allUsersRef }) => {
 
                     {localStorage.getItem("user-name")?.toLowerCase() !== "admin" && (
                         <div>
-                            <div className="flex flex-col-2 md:flex-row bg-gray-50 rounded-lg shadow-md overflow-hidden gap-10 items-center justify-center md:items-start md:justify-start md:text-left">
-                                <img
-                                    src={
-                                        userDetails?.employee_id
-                                            ? `/employees/${userDetails.employee_id}.jpg`
-                                            : "/user.png"
-                                    }
-                                    alt="Employee"
-                                    className="w-34 md:w-1/3 h-34 md:h-auto object-cover lg:w-48 lg:h-48"
-                                    onError={(e) => {
-                                        e.target.src = "/user.png";
-                                    }}
-                                />
+                            <div
+                                className="
+                                            flex flex-col md:flex-row
+                                            gap-6 md:gap-8
+                                            p-4 md:p-6
+                                            bg-gray-50
+                                            rounded-lg
+                                            shadow-md
+                                            items-center md:items-start
+                                        "
+                            >
+                                {/* IMAGE SECTION */}
+                                <div className="relative shrink-0">
+                                    <img
+                                        src={
+                                            !imageError && userDetails?.emp_image
+                                                ? userDetails.emp_image
+                                                : "/user.png"
+                                        }
+                                        alt="Employee"
+                                                                                className="
+                                                w-32 h-32
+                                                sm:w-36 sm:h-36
+                                                md:w-40 md:h-40
+                                                lg:w-48 lg:h-48
+                                                object-cover
+                                                rounded-lg
+                                                border
+                                                bg-gray-100
+                                            "
+                                        loading="lazy"
+                                        onError={() => setImageError(true)}
+                                    />
 
-                                <div className="flex flex-col text-sm md:text-base lg:text-base">
+                                    {/* EDIT ICON */}
+                                    <label
+                                        title="Edit profile image"
+                                        className={`
+                                                absolute bottom-2 right-2
+                                                flex items-center justify-center
+                                                w-9 h-9
+                                                rounded-full
+                                                text-white
+                                                cursor-pointer
+                                                transition
+                                                ${uploading ? "bg-gray-400" : "bg-black/70 hover:bg-black"}
+                                            `}
+                                    >
+                                        {uploading ? (
+                                            <span className="text-xs">⏳</span>
+                                        ) : (
+                                            <Pencil size={16} strokeWidth={2} />
+                                        )}
+
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            disabled={uploading}
+                                            onChange={handleEmpImageChange}
+                                        />
+                                    </label>
+                                </div>
+
+                                {/* WARNING/SUCCESS MESSAGES */}
+                                <div className="w-full md:w-auto">
+                                    {uploadWarning && (
+                                        <div className="mb-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm animate-pulse">
+                                            <p className="font-medium">{uploadWarning}</p>
+                                        </div>
+                                    )}
+                                    {uploadSuccess && (
+                                        <div className="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+                                            <p className="font-medium">{uploadSuccess}</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* DETAILS SECTION */}
+                                <div className="flex-1 flex flex-col text-sm md:text-base text-center md:text-left">
                                     {loading ? (
                                         <div className="space-y-3">
-                                            <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-36 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-44 animate-pulse"></div>
+                                            <div className="h-7 bg-gray-200 rounded w-48 mx-auto md:mx-0 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-40 mx-auto md:mx-0 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-44 mx-auto md:mx-0 animate-pulse"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-36 mx-auto md:mx-0 animate-pulse"></div>
                                         </div>
                                     ) : userDetails ? (
                                         <>
                                             <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-2">
                                                 {userDetails.user_name || "N/A"}
                                             </h3>
+
                                             <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Employee ID:</span> {userDetails.employee_id || "N/A"}
+                                                <span className="font-semibold">Employee ID:</span>{" "}
+                                                {userDetails.employee_id || "N/A"}
                                             </p>
+
                                             <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Department:</span> {userDetails.user_access || "N/A"}
+                                                <span className="font-semibold">Department:</span>{" "}
+                                                {userDetails.user_access || "N/A"}
                                             </p>
+
                                             <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Phone:</span> {userDetails.number || "N/A"}
+                                                <span className="font-semibold">Phone:</span>{" "}
+                                                {userDetails.number || "N/A"}
                                             </p>
-                                            <p className="text-gray-600 mb-1">
-                                                <span className="font-semibold">Email:</span> {userDetails.email_id || "N/A"}
+
+                                            <p className="text-gray-600 mb-1 break-all">
+                                                <span className="font-semibold">Email:</span>{" "}
+                                                {userDetails.email_id || "N/A"}
                                             </p>
-                                            <p className="text-gray-600 mb-1">
+
+                                            <p className="text-gray-600 mt-2">
                                                 <span className="font-semibold">Status:</span>
-                                                <span className={`ml-2 px-2 py-1 text-xs rounded-full ${userDetails.status === "active"
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-red-100 text-red-800"
-                                                    }`}>
+                                                <span
+                                                    className={`
+                                                            ml-2 px-2 py-1 text-xs rounded-full
+                                                            ${userDetails.status === "active"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-red-100 text-red-800"
+                                                        }
+                                                    `}
+                                                >
                                                     {userDetails.status || "N/A"}
                                                 </span>
                                             </p>
                                         </>
                                     ) : (
                                         <div>
-                                            <h3 className="text-2xl font-bold text-gray-800 mb-2">Employee Details</h3>
-                                            <p className="text-gray-600">Unable to load employee information</p>
+                                            <h3 className="text-xl font-bold text-gray-800 mb-2">
+                                                Employee Details
+                                            </h3>
+                                            <p className="text-gray-600">
+                                                Unable to load employee information
+                                            </p>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-2 mt-4">
-                                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                                <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
                                     <div className="p-6 text-center">
                                         <h3 className="text-md font-bold text-gray-800 mb-2">
                                             Today's Tasks
@@ -333,7 +617,7 @@ const HomePage = ({ allUsersRef }) => {
                                     </div>
                                 </div>
 
-                                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                                <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
                                     <div className="p-6 text-center">
                                         <h3 className="text-md font-bold text-gray-800 mb-2">
                                             Attendance
@@ -369,8 +653,8 @@ const HomePage = ({ allUsersRef }) => {
 
                             </div>
 
-                            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                            <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
+                                <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
                                     <div className="p-3">
                                         {/* Header */}
                                         <div className="flex justify-between items-center mb-4">
@@ -378,7 +662,7 @@ const HomePage = ({ allUsersRef }) => {
                                             {/* <span className="text-blue-500">📊</span> */}
                                         </div>
 
-                                        <div className="flex items-center gap-6">
+                                        <div className="flex items-center">
                                             {/* CIRCLE */}
                                             <div className="relative w-36 h-36">
                                                 <svg className="w-full h-full rotate-[-90deg]">
@@ -485,175 +769,195 @@ const HomePage = ({ allUsersRef }) => {
                         </div>
                     )}
 
-                    <div ref={allUsersRef}>
-                        {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
-                            <div className="w-full">
-                                <div className="bg-gray-50 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
-                                    <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
+                    {showAllUsersModal && (
+                        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">
+                            <div className="bg-white w-[95%] max-w-7xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col">
+                                <div className="flex items-center justify-between px-6 py-4 border-b">
+                                    <h2 className="text-xl font-bold text-gray-800">
                                         All Users ({filteredUsers.length})
-                                    </h1>
+                                    </h2>
 
-                                    {allUsers.length === 0 ? (
-                                        <p className="text-gray-600">No users found...</p>
-                                    ) : (
-                                        <><div className="flex flex-col-2 md:flex-row gap-4 mb-4">
+                                    <button
+                                        onClick={() => setShowAllUsersModal(false)}
+                                        className="text-2xl font-bold text-gray-500 hover:text-red-600"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
 
-                                            {/* Search Box */}
-                                            <input
-                                                type="text"
-                                                placeholder="Search by Employee ID or Username..."
-                                                value={search}
-                                                onChange={(e) => setSearch(e.target.value)}
-                                                className="w-full md:w-1/3 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none" />
+                                <div ref={allUsersRef}>
+                                    {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                                        <div className="w-full">
+                                            <div className="bg-white/60 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
+                                                {/* <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
+                                                    All Users ({filteredUsers.length})
+                                                </h1> */}
 
-                                            {/* Department Dropdown */}
-                                            <select
-                                                value={departmentFilter}
-                                                onChange={(e) => setDepartmentFilter(e.target.value)}
-                                                className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
-                                            >
-                                                <option value="">All Departments</option>
-                                                {[...new Set(allUsers.map((u) => u.department))].map((dept) => (
-                                                    <option key={dept} value={dept}>
-                                                        {dept}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <select
-                                                value={attendanceFilter}
-                                                onChange={(e) => setAttendanceFilter(e.target.value)}
-                                                className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
-                                            >
-                                                <option value="">All Attendance</option>
-                                                <option value="present">Present</option>
-                                                <option value="absent">Absent</option>
-                                            </select>
-                                        </div>
-                                            <div className="relative max-h-[65vh] overflow-y-auto overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
-                                                <table className="min-w-full text-sm">
-                                                    {/* HEADER */}
-                                                    <thead className="sticky top-0 z-10 bg-gradient-to-r from-gray-50 to-gray-100 backdrop-blur border-b">
-                                                        <tr>
-                                                            {[
-                                                                "Employee ID",
-                                                                "Username",
-                                                                "Department",
-                                                                "Attendance",
-                                                                "Contact",
-                                                                "System Access",
-                                                                "Status",
-                                                            ].map((h) => (
-                                                                <th
-                                                                    key={h}
-                                                                    className="px-4 py-3 text-left font-semibold text-gray-700 tracking-wide uppercase text-xs"
-                                                                >
-                                                                    {h}
-                                                                </th>
+                                                {allUsers.length === 0 ? (
+                                                    <p className="text-gray-600">No users found...</p>
+                                                ) : (
+                                                    <><div className="flex flex-col-2 md:flex-row gap-4 mb-4">
+
+                                                        {/* Search Box */}
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search by Employee ID or Username..."
+                                                            value={search}
+                                                            onChange={(e) => setSearch(e.target.value)}
+                                                            className="w-full md:w-1/3 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none" />
+
+                                                        {/* Department Dropdown */}
+                                                        <select
+                                                            value={departmentFilter}
+                                                            onChange={(e) => setDepartmentFilter(e.target.value)}
+                                                            className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                                        >
+                                                            <option value="">All Departments</option>
+                                                            {[...new Set(allUsers.map((u) => u.department))].map((dept) => (
+                                                                <option key={dept} value={dept}>
+                                                                    {dept}
+                                                                </option>
                                                             ))}
-                                                        </tr>
-                                                    </thead>
-
-                                                    {/* BODY */}
-                                                    <tbody className="divide-y divide-gray-100">
-                                                        {filteredUsers.map((user, idx) => (
-                                                            <tr
-                                                                key={user.id}
-                                                                className={`transition ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/40"
-                                                                    } hover:bg-red-50`}
-                                                            >
-                                                                <td className="px-4 py-3 font-medium text-gray-800">
-                                                                    {user.employee_id}
-                                                                </td>
-
-                                                                <td className="px-4 py-3 text-gray-700">
-                                                                    {user.user_name}
-                                                                </td>
-
-                                                                <td className="px-4 py-3 text-gray-600">
-                                                                    {user.user_access}
-                                                                </td>
-
-                                                                <td className="px-4 py-3">
-                                                                    {attendanceMap[user.employee_id] === "IN" ? (
-                                                                        <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-700">
-                                                                            Present
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-700">
-                                                                            Absent
-                                                                        </span>
-                                                                    )}
-                                                                </td>
-
-                                                                <td className="px-4 py-3 text-gray-600">
-                                                                    {user.number}
-                                                                </td>
-
-                                                                {/* SYSTEM ACCESS */}
-                                                                <td className="px-4 py-3">
-                                                                    <select
-                                                                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs
-                           focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                                                                        defaultValue=""
-                                                                        onChange={(e) => {
-                                                                            const value = e.target.value;
-                                                                            if (!value) return;
-                                                                            handleSystemAccessPatch(user.id, value);
-                                                                            e.target.value = "";
-                                                                        }}
-                                                                    >
-                                                                        <option value="">Add system access</option>
-                                                                        {systemsList.map((sys) => (
-                                                                            <option key={sys.id} value={sys.systems}>
-                                                                                {sys.systems}
-                                                                            </option>
-                                                                        ))}
-                                                                    </select>
-
-                                                                    <div className="mt-2 flex flex-wrap gap-1.5">
-                                                                        {user.system_access?.split(",").map((access) => (
-                                                                            <span
-                                                                                key={access}
-                                                                                className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+                                                        </select>
+                                                        <select
+                                                            value={attendanceFilter}
+                                                            onChange={(e) => setAttendanceFilter(e.target.value)}
+                                                            className="w-full md:w-1/4 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                                        >
+                                                            <option value="">All Attendance</option>
+                                                            <option value="present">Present</option>
+                                                            <option value="absent">Absent</option>
+                                                        </select>
+                                                    </div>
+                                                        <div className="relative max-h-[65vh] overflow-y-auto overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+                                                            <table className="min-w-full text-sm">
+                                                                {/* HEADER */}
+                                                                <thead className="sticky top-0 z-10 bg-gradient-to-r from-gray-50 to-gray-100 backdrop-blur border-b">
+                                                                    <tr>
+                                                                        {[
+                                                                            "Employee ID",
+                                                                            "Username",
+                                                                            "Department",
+                                                                            "Attendance",
+                                                                            "Contact",
+                                                                            "System Access",
+                                                                            "Status",
+                                                                        ].map((h) => (
+                                                                            <th
+                                                                                key={h}
+                                                                                className="px-4 py-3 text-left font-semibold text-gray-700 tracking-wide uppercase text-xs"
                                                                             >
-                                                                                {access}
-                                                                                <button
-                                                                                    onClick={() =>
-                                                                                        handleSystemAccessPatch(user.id, access)
-                                                                                    }
-                                                                                    className="text-red-500 hover:text-red-700"
-                                                                                >
-                                                                                    ✕
-                                                                                </button>
-                                                                            </span>
+                                                                                {h}
+                                                                            </th>
                                                                         ))}
-                                                                    </div>
-                                                                </td>
+                                                                    </tr>
+                                                                </thead>
 
-                                                                {/* STATUS */}
-                                                                <td className="px-4 py-3">
-                                                                    <span
-                                                                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
+                                                                {/* BODY */}
+                                                                <tbody className="divide-y divide-gray-100">
+                                                                    {filteredUsers.map((user, idx) => (
+                                                                        <tr
+                                                                            key={user.id}
+                                                                            className={`transition ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/40"
+                                                                                } hover:bg-red-50`}
+                                                                        >
+                                                                            <td className="px-4 py-3 font-medium text-gray-800">
+                                                                                {user.employee_id}
+                                                                            </td>
+
+                                                                            <td className="px-4 py-3 text-gray-700">
+                                                                                {user.user_name}
+                                                                            </td>
+
+                                                                            <td className="px-4 py-3 text-gray-600">
+                                                                                {user.user_access}
+                                                                            </td>
+
+                                                                            <td className="px-4 py-3">
+                                                                                {attendanceMap[user.employee_id] === "IN" ? (
+                                                                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-700">
+                                                                                        Present
+                                                                                    </span>
+                                                                                ) : (
+                                                                                    <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-red-100 text-red-700">
+                                                                                        Absent
+                                                                                    </span>
+                                                                                )}
+                                                                            </td>
+
+                                                                            <td className="px-4 py-3 text-gray-600">
+                                                                                {user.number}
+                                                                            </td>
+
+                                                                            {/* SYSTEM ACCESS */}
+                                                                            <td className="px-4 py-3">
+                                                                                <select
+                                                                                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs
+                           focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                                                                                    defaultValue=""
+                                                                                    onChange={(e) => {
+                                                                                        const value = e.target.value;
+                                                                                        if (!value) return;
+                                                                                        handleSystemAccessPatch(user.id, value);
+                                                                                        e.target.value = "";
+                                                                                    }}
+                                                                                >
+                                                                                    <option value="">Add system access</option>
+                                                                                    {systemsList.map((sys) => (
+                                                                                        <option key={sys.id} value={sys.systems}>
+                                                                                            {sys.systems}
+                                                                                        </option>
+                                                                                    ))}
+                                                                                </select>
+
+                                                                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                                                                    {user.system_access?.split(",").map((access) => (
+                                                                                        <span
+                                                                                            key={access}
+                                                                                            className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+                                                                                        >
+                                                                                            {access}
+                                                                                            <button
+                                                                                                onClick={() =>
+                                                                                                    handleSystemAccessPatch(user.id, access)
+                                                                                                }
+                                                                                                className="text-red-500 hover:text-red-700"
+                                                                                            >
+                                                                                                ✕
+                                                                                            </button>
+                                                                                        </span>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </td>
+
+                                                                            {/* STATUS */}
+                                                                            <td className="px-4 py-3">
+                                                                                <span
+                                                                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
                                                                         ${user.status?.toLowerCase() === "active"
-                                                                                ? "bg-green-100 text-green-700"
-                                                                                : "bg-red-100 text-red-700"
-                                                                            }`}
-                                                                    >
-                                                                        {user.status || "N/A"}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                                                                            ? "bg-green-100 text-green-700"
+                                                                                            : "bg-red-100 text-red-700"
+                                                                                        }`}
+                                                                                >
+                                                                                    {user.status || "N/A"}
+                                                                                </span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
 
-                                        </>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
+
                 </div>
             </section >
 
@@ -706,7 +1010,6 @@ const HomePage = ({ allUsersRef }) => {
                                 ></iframe>
                             </div>
                         </div>
-
                     </div>
 
                     {/* Divider */}
