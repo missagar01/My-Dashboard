@@ -16,6 +16,12 @@ jobs:
           node-version: "20"
           cache: "npm"
 
+      # 🔐 CREATE .env FROM GITHUB SECRETS (IMPORTANT)
+      - name: Create .env for build
+        run: |
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env
+          echo "VITE_API_BASE_USER_URL=${{ secrets.VITE_API_BASE_USER_URL }}" >> .env
+
       - name: Install dependencies
         run: npm ci || npm install
 
@@ -32,3 +38,5 @@ jobs:
       - name: Deploy to S3
         run: |
           aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete
+
+
