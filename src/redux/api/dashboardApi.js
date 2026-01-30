@@ -142,34 +142,6 @@ export const getPendingTaskApi = async ({
     }
 };
 
-export const getNotDoneTaskApi = async ({
-    dashboardType,
-    role,
-    username,
-    staffFilter = "all",
-    departmentFilter = "all",
-}) => {
-    try {
-        const res = await axios.get(`${BASE_URL}/not-done`, {
-            params: {
-                dashboardType,
-                role,
-                username,
-                staffFilter,
-                departmentFilter,
-            },
-        });
-
-        return res.data; // number
-    } catch (err) {
-        return {
-            error:
-                err.response?.data?.error ||
-                "Failed to fetch not done tasks",
-        };
-    }
-};
-
 export const getOverdueTaskApi = async ({
     dashboardType,
     role,

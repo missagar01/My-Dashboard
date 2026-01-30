@@ -8,7 +8,8 @@ import {
   updateSystemApi,
   deleteSystemApi,
 } from "../redux/api/systemsApi";
-// import { fetchUserDetailsApi } from "../redux/api/settingApi";
+import AllUserScore from "../pages/AllUserScore";
+
 
 // Under Construction Component
 function UnderConstruction() {
@@ -58,6 +59,8 @@ export default function AdminLayout({ children }) {
   const [isAdminSidebarOpen, setIsAdminSidebarOpen] = useState(false);
   const [showAllUsersModal, setShowAllUsersModal] = useState(false);
   const allUsersRef = useRef(null);
+  const [showAllUserScore, setShowAllUserScore] = useState(false);
+
 
 
 
@@ -390,11 +393,30 @@ export default function AdminLayout({ children }) {
                   <button
                     onClick={() => {
                       setShowAllUsersModal(true);
+                      setShowAllUserScore(false);
                       setIsMobileMenuOpen(false);
                     }}
                     className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
                   >
                     Show All Users
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowAllUserScore(true);
+                      setShowAllUsersModal(false);
+                      setIsMobileMenuOpen(false);
+
+                      requestAnimationFrame(() => {
+                        allUsersRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      });
+                    }}
+                    className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    User Score Report
                   </button>
 
                   <button
@@ -432,12 +454,41 @@ export default function AdminLayout({ children }) {
 
         <main className="flex-1 overflow-y-auto bg-transparent">
           {!isIframeVisible && !showUnderConstruction && (
-            <HomePage
-              allUsersRef={allUsersRef}
-              showAllUsersModal={showAllUsersModal}
-              setShowAllUsersModal={setShowAllUsersModal}
-            />
+            <>
+              <HomePage
+                allUsersRef={allUsersRef}
+                showAllUsersModal={showAllUsersModal}
+                setShowAllUsersModal={setShowAllUsersModal}
+              />
+
+              {showAllUserScore && (
+                <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">
+                  <div className="bg-white w-[95%] max-w-7xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col">
+
+                    {/* HEADER */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b">
+                      <h2 className="text-xl font-bold text-gray-800">
+                        User Score Report
+                      </h2>
+
+                      <button
+                        onClick={() => setShowAllUserScore(false)}
+                        className="text-2xl font-bold text-gray-500 hover:text-red-600"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* CONTENT */}
+                    <div className="flex-1 overflow-y-auto">
+                      <AllUserScore />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
+
 
           {/* Show Under Construction */}
           {showUnderConstruction && <UnderConstruction />}
@@ -720,6 +771,7 @@ export default function AdminLayout({ children }) {
                   // setShowUnderConstruction(false);
                   // setCurrentUrl("");
                   setShowAllUsersModal(true);
+                  setShowAllUserScore(false);
                   setIsAdminSidebarOpen(false);
 
                   requestAnimationFrame(() => {
@@ -732,6 +784,24 @@ export default function AdminLayout({ children }) {
                 className="text-left px-4 py-3 rounded hover:bg-gray-100 font-medium"
               >
                 Show All Users
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowAllUserScore(true);
+                  setShowAllUsersModal(false); // close modal if open
+                  setIsAdminSidebarOpen(false);
+
+                  requestAnimationFrame(() => {
+                    allUsersRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  });
+                }}
+                className="text-left px-4 py-3 rounded hover:bg-gray-100 font-medium"
+              >
+                User Score Report
               </button>
 
               {/* Add / Edit Systems */}
