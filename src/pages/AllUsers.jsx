@@ -9,9 +9,38 @@ import {
     getCompletedTodayApi,
     getCompletedTaskApi,
     getPendingTaskApi,
-    getNotDoneTaskApi,
     getOverdueTaskApi,
 } from "../redux/api/dashboardApi";
+import { fetchUserScoreApiByName } from "../redux/api/userScoreApi";
+
+const formatDate = (d) => d.toISOString().split("T")[0];
+
+const buildMonthOptions = (count = 6) => {
+    const today = new Date();
+
+    return Array.from({ length: count }).map((_, i) => {
+        const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+
+        const isCurrentMonth =
+            monthDate.getMonth() === today.getMonth() &&
+            monthDate.getFullYear() === today.getFullYear();
+
+        return {
+            key: `${monthDate.getFullYear()}-${monthDate.getMonth()}`,
+            label: monthDate.toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+            }),
+            startDate: formatDate(
+                new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
+            ),
+            endDate: formatDate(
+                new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1)
+            ),
+            isCurrentMonth,
+        };
+    });
+};
 
 
 const HomePage = ({ allUsersRef, showAllUsersModal,
@@ -28,13 +57,18 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
     const [completedToday, setCompletedToday] = useState(0);
     const [completed, setCompleted] = useState(0);
     const [pending, setPending] = useState(0);
-    const [notDone, setNotDone] = useState(0);
     const [overdue, setOverdue] = useState(0);
     const [activeIndex, setActiveIndex] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [uploadWarning, setUploadWarning] = useState("");
     const [uploadSuccess, setUploadSuccess] = useState("");
+
+    const [userScore, setUserScore] = useState(null);
+    const [scoreLoading, setScoreLoading] = useState(false);
+    const monthOptions = buildMonthOptions(6);
+    const [selectedMonth, setSelectedMonth] = useState(monthOptions[0]);
+
 
     // Constants for file validation
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -114,6 +148,23 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
         }
     };
 
+    const fetchUserScore = async (userName, startDate, endDate) => {
+        try {
+            const res = await fetchUserScoreApiByName(userName, {
+                startDate,
+                endDate,
+            });
+
+            if (res?.data?.length) {
+                setUserScore(res.data[0]);
+            } else {
+                setUserScore(null);
+            }
+        } catch (err) {
+            console.error("Failed to fetch user score", err);
+        }
+    };
+
     useEffect(() => {
         const fetchEmployeeDetails = async () => {
             try {
@@ -145,6 +196,14 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                 const matchedUser = await fetchUserDetailsApiById(userId);
                 setUserDetails(matchedUser || null);
+
+                if (matchedUser?.user_name && selectedMonth) {
+                    fetchUserScore(
+                        matchedUser.user_name,
+                        selectedMonth.startDate,
+                        selectedMonth.endDate
+                    );
+                }
 
                 const systemsData = await fetchSystemsApi();
                 setSystemsList(Array.isArray(systemsData) ? systemsData : []);
@@ -186,18 +245,15 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                 const [
                     completedCount,
                     pendingCount,
-                    notDoneCount,
                     overdueCount,
                 ] = await Promise.all([
                     getCompletedTaskApi({ dashboardType, role, username }),
                     getPendingTaskApi({ dashboardType, role, username }),
-                    getNotDoneTaskApi({ dashboardType, role, username }),
                     getOverdueTaskApi({ dashboardType, role, username }),
                 ]);
 
                 setCompleted(Number(completedCount) || 0);
                 setPending(Number(pendingCount) || 0);
-                setNotDone(Number(notDoneCount) || 0);
                 setOverdue(Number(overdueCount) || 0);
 
 
@@ -212,6 +268,15 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
         fetchEmployeeDetails();
     }, []);
 
+    useEffect(() => {
+        if (userDetails?.user_name && selectedMonth) {
+            fetchUserScore(
+                userDetails.user_name,
+                selectedMonth.startDate,
+                selectedMonth.endDate
+            );
+        }
+    }, [selectedMonth]);
 
     const attendanceMap = Array.isArray(attendance)
         ? attendance.reduce((acc, a) => {
@@ -239,28 +304,24 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
         return matchesSearch && matchesDept && matchesAttendance;
     });
 
-    const RADIUS = 60;
-    const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+    // ================= SCORE CIRCLE CALCULATION =================
 
-    const total =
-        completed + pending + notDone + overdue || 1;
+    const SCORE_RADIUS = 60;
+    const SCORE_CIRCUMFERENCE = 2 * Math.PI * SCORE_RADIUS;
+    const rawScore = Number(userScore?.total_score ?? 0);
+    const clampedScore = Math.max(-100, Math.min(100, rawScore));
+    const graphPercent = Math.min(100, Math.abs(clampedScore));
 
-    const completedPct = (completed / total) * 100;
-    const pendingPct = (pending / total) * 100;
-    const notDonePct = (notDone / total) * 100;
-    const overduePct = (overdue / total) * 100;
+    const scoreLength =
+        (graphPercent / 100) * SCORE_CIRCUMFERENCE;
 
-    const completedLen = (completed / total) * CIRCUMFERENCE;
-    const pendingLen = (pending / total) * CIRCUMFERENCE;
-    const notDoneLen = (notDone / total) * CIRCUMFERENCE;
-    const overdueLen = (overdue / total) * CIRCUMFERENCE;
+    const getScoreColor = (score) => {
+        if (score <= -51) return "#ef4444";
+        if (score <= -26) return "#f59e0b";
+        return "#10b981";
+    };
 
-    const completedOffset = 0;
-    const pendingOffset = completedLen;
-    const notDoneOffset = completedLen + pendingLen;
-    const overdueOffset = completedLen + pendingLen + notDoneLen;
-
-
+    const scoreColor = getScoreColor(clampedScore);
 
     return (
         <div className="w-full">
@@ -268,37 +329,35 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                 <div className="container mx-auto px-4 md:px-8">
                     {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
                         <div className="max-w-4xl mx-auto text-center mb-12">
-                           <h2
-  className="
-    text-3xl md:text-4xl lg:text-4xl font-extrabold
-    inline-block px-6 py-3 mb-6 rounded-xl
-    bg-clip-text text-transparent
-    bg-gradient-to-r from-red-600 to-white
-    drop-shadow-[0_4px_12px_rgba(153,27,27,0.85)]
+                            <h2
+                                className="
+                                    text-3xl md:text-4xl lg:text-4xl font-extrabold
+                                    inline-block px-6 py-3 mb-6 rounded-xl
+                                    bg-clip-text text-transparent
+                                    bg-gradient-to-r from-red-600 to-white
+                                    drop-shadow-[0_4px_12px_rgba(153,27,27,0.85)]
+                                "
+                                style={{
+                                    backgroundImage: "url('/transPipe.png')",
+                                    backgroundSize: "cover",
+                                    backgroundPosition: "center",
+                                }}
+                            >
+                                Welcome To Sourabh Rolling Mill
 
-
-  "
-  style={{
-    backgroundImage: "url('/transPipe.png')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  }}
->
-  Welcome To Sourabh Rolling Mill
-
-  <div>
-    <p
-      className="
-        typing-effect text-2xl font-bold leading-relaxed inline-block
-        bg-clip-text text-transparent
-        bg-gradient-to-r from-red-600 to-red-400
-        drop-shadow-[0_3px_8px_rgba(0,0,0,0.8)]
-      "
-    >
-      मजबूती और विश्वास है हम...
-    </p>
-  </div>
-</h2>
+                                <div>
+                                    <p
+                                        className="
+                                    typing-effect text-2xl font-bold leading-relaxed inline-block
+                                    bg-clip-text text-transparent
+                                    bg-gradient-to-r from-red-600 to-red-400
+                                    drop-shadow-[0_3px_8px_rgba(0,0,0,0.8)]
+                                "
+                                    >
+                                        मजबूती और विश्वास है हम...
+                                    </p>
+                                </div>
+                            </h2>
 
 
                             <div className="max-w-4xl mx-auto mb-12
@@ -483,7 +542,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                                 : "/user.png"
                                         }
                                         alt="Employee"
-                                                                                className="
+                                        className="
                                                 w-32 h-32
                                                 sm:w-36 sm:h-36
                                                 md:w-40 md:h-40
@@ -608,12 +667,16 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                 <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
                                     <div className="p-6 text-center">
                                         <h3 className="text-md font-bold text-gray-800 mb-2">
-                                            Today's Tasks
+                                            Today's Tasks - <span className="text-yellow-600"> {pendingToday}</span>
                                         </h3>
 
-                                        <p className="text-yellow-600 font-semibold text-lg">
+                                        <h3 className="text-md font-bold text-gray-800 mb-2">
+                                            Completed - <span className="text-green-600"> {completedToday}</span>
+                                        </h3>
+
+                                        {/* <p className="text-yellow-600 font-semibold text-lg">
                                             {completedToday} / {" "}<span className="text-green-600"> {pendingToday}</span>
-                                        </p>
+                                        </p> */}
                                     </div>
                                 </div>
 
@@ -653,116 +716,110 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                             </div>
 
-                            <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
-                                <div className="bg-white/80 rounded-xl shadow-md overflow-hidden">
-                                    <div className="p-3">
-                                        {/* Header */}
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h3 className="text-md font-bold text-gray-800">Overall Progress</h3>
-                                            {/* <span className="text-blue-500">📊</span> */}
-                                        </div>
+                            <div className="bg-white/80 rounded-xl shadow-md overflow-hidden mt-4">
+                                <div className="p-4">
+                                    {/* HEADER */}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-md font-bold text-gray-800">
+                                            Performance Score
+                                        </h3>
 
-                                        <div className="flex items-center">
-                                            {/* CIRCLE */}
+                                        {/* MONTH DROPDOWN */}
+                                        <select
+                                            value={selectedMonth.key}
+                                            onChange={(e) =>
+                                                setSelectedMonth(
+                                                    monthOptions.find((m) => m.key === e.target.value)
+                                                )
+                                            }
+                                            className="
+          px-3 py-1.5 text-sm rounded-lg border
+          bg-white shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-red-400
+        "
+                                        >
+                                            {monthOptions.map((m) => (
+                                                <option key={m.key} value={m.key}>
+                                                    {m.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* BODY */}
+                                    {scoreLoading ? (
+                                        <div className="h-36 flex items-center justify-center text-gray-400">
+                                            Loading score...
+                                        </div>
+                                    ) : userScore ? (
+                                        <div className="flex justify-center">
+                                            {/* SCORE CIRCLE */}
                                             <div className="relative w-36 h-36">
                                                 <svg className="w-full h-full rotate-[-90deg]">
-                                                    {/* Background */}
+                                                    {/* background */}
                                                     <circle
                                                         cx="72"
                                                         cy="72"
-                                                        r={RADIUS}
+                                                        r={SCORE_RADIUS}
                                                         stroke="#e5e7eb"
                                                         strokeWidth="12"
                                                         fill="none"
                                                     />
 
-                                                    {/* Completed */}
+                                                    {/* score ring */}
                                                     <circle
                                                         cx="72"
                                                         cy="72"
-                                                        r={RADIUS}
-                                                        stroke="#10b981"
+                                                        r={SCORE_RADIUS}
+                                                        stroke={scoreColor}
                                                         strokeWidth="12"
                                                         fill="none"
-                                                        strokeDasharray={`${completedLen} ${CIRCUMFERENCE}`}
-                                                        strokeDashoffset={-completedOffset}
-                                                        strokeLinecap="line"
-                                                    />
-
-                                                    {/* Pending */}
-                                                    <circle
-                                                        cx="72"
-                                                        cy="72"
-                                                        r={RADIUS}
-                                                        stroke="#f59e0b"
-                                                        strokeWidth="12"
-                                                        fill="none"
-                                                        strokeDasharray={`${pendingLen} ${CIRCUMFERENCE}`}
-                                                        strokeDashoffset={-pendingOffset}
-                                                        strokeLinecap="line"
-                                                    />
-
-                                                    {/* Not Done */}
-                                                    <circle
-                                                        cx="72"
-                                                        cy="72"
-                                                        r={RADIUS}
-                                                        stroke="#9ca3af"
-                                                        strokeWidth="12"
-                                                        fill="none"
-                                                        strokeDasharray={`${notDoneLen} ${CIRCUMFERENCE}`}
-                                                        strokeDashoffset={-notDoneOffset}
-                                                        strokeLinecap="line"
-                                                    />
-
-                                                    {/* Overdue */}
-                                                    <circle
-                                                        cx="72"
-                                                        cy="72"
-                                                        r={RADIUS}
-                                                        stroke="#ef4444"
-                                                        strokeWidth="12"
-                                                        fill="none"
-                                                        strokeDasharray={`${overdueLen} ${CIRCUMFERENCE}`}
-                                                        strokeDashoffset={-overdueOffset}
-                                                        strokeLinecap="line"
+                                                        strokeDasharray={`${scoreLength} ${SCORE_CIRCUMFERENCE}`}
+                                                        strokeLinecap="round"
                                                     />
                                                 </svg>
 
-                                                {/* Center */}
+                                                {/* center text */}
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                    <span className="text-2xl font-bold text-indigo-600">
-                                                        {completedPct.toFixed(1)}%
+                                                    <span className="text-2xl font-bold text-gray-800">
+                                                        {clampedScore}
                                                     </span>
-                                                    <span className="text-xs text-gray-500">Completed</span>
+                                                    <span className="text-xs text-gray-500">
+                                                        Total Score
+                                                    </span>
                                                 </div>
                                             </div>
-
-                                            {/* LEGEND */}
-                                            <div className="space-y-2 text-sm">
+                                            <div className="text-md space-y-1 m-8">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                                                    Completed: {completed} ({completedPct.toFixed(1)}%)
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+                                                    <span className="text-gray-700">
+                                                        <strong>Total:</strong>{" "}
+                                                        {userScore?.total_tasks ?? 0}
+                                                    </span>
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-3 h-3 rounded-full bg-orange-500"></span>
-                                                    Pending: {pending} ({pendingPct.toFixed(1)}%)
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                                                    <span className="text-green-700">
+                                                        <strong>Completed:</strong>{" "}
+                                                        {userScore?.total_completed_tasks ?? 0}
+                                                    </span>
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-3 h-3 rounded-full bg-gray-400"></span>
-                                                    Not Done: {notDone} ({notDonePct.toFixed(1)}%)
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                                                    Overdue: {overdue} ({overduePct.toFixed(1)}%)
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                                    <span className="text-blue-700">
+                                                        <strong>On Time:</strong>{" "}
+                                                        {userScore?.total_done_on_time ?? 0}
+                                                    </span>
                                                 </div>
                                             </div>
-
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="text-sm text-gray-400 text-center py-10">
+                                            No score data available
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
