@@ -10,27 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
-      # 🔐 CREATE .env FROM GITHUB SECRETS
+      # 3️⃣ Create .env from secrets
       - name: Create .env for build
         run: |
           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env
           echo "VITE_API_BASE_USER_URL=${{ secrets.VITE_API_BASE_USER_URL }}" >> .env
 
+      # 4️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci || npm install
 
+      # 5️⃣ Build project
       - name: Build frontend
         run: npm run build
 
+      # 6️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -38,12 +43,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # 7️⃣ Deploy to S3 (THIS ALWAYS WORKS)
       - name: Deploy to S3
         run: |
           aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete
 
- - name: Invalidate CloudFront cache
+      # 8️⃣ CloudFront Invalidation (NON-BLOCKING)
+      - name: Invalidate CloudFront cache
+        continue-on-error: true
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
             --paths "/*"
+
+
