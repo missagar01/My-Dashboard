@@ -7,7 +7,8 @@ import AdminDashboard from "./pages/Dashboard";
 const ProtectedRoute = ({ children }) => {
   const username = localStorage.getItem("user-name");
 
-  
+
+
   // Not logged in → go login
   if (!username) {
     return <Navigate to="/login" replace />;
