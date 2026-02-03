@@ -37,14 +37,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # ✅ Deploy dist contents to S3
-      - name: Deploy to S3 (FAST)
+      # 🔍 Verify Build Output
+      - name: List Build Contents
+        run: ls -R dist/
+
+      # 📂 Deploy Assets FIRST (Long Cache)
+      - name: Deploy Assets to S3
+        run: |
+          aws s3 sync dist/assets s3://${{ secrets.S3_BUCKET }}/assets \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable"
+
+      # 📄 Deploy HTML/Root LAST (No Cache)
+      - name: Deploy Root to S3
         run: |
           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }} \
+            --exclude "assets/*" \
             --delete \
-            --cache-control "no-cache"
+            --cache-control "no-cache, no-store, must-revalidate"
 
-      # 🚀 MAIN DOMAIN TURANT UPDATE
+      # 🚀 Invalidate CloudFront
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
