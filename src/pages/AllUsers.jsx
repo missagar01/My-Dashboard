@@ -34,9 +34,9 @@ const buildMonthOptions = (count = 6) => {
             startDate: formatDate(
                 new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
             ),
-            endDate: formatDate(
-                new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1)
-            ),
+            endDate: isCurrentMonth
+                ? formatDate(today)
+                : formatDate(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1)),
             isCurrentMonth,
         };
     });
@@ -969,9 +969,9 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                                                                 </select>
 
                                                                                 <div className="mt-2 flex flex-wrap gap-1.5">
-                                                                                    {user.system_access?.split(",").map((access) => (
+                                                                                    {user.system_access?.split(",").map((access, accessIdx) => (
                                                                                         <span
-                                                                                            key={access}
+                                                                                            key={`${user.id}-${access}-${accessIdx}`}
                                                                                             className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
                                                                                         >
                                                                                             {access}

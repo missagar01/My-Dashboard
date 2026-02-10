@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/user-score`;
+const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/user-score`;
 
 /**
  * GET ALL USERS SCORES

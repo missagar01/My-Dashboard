@@ -19,6 +19,10 @@ const buildMonthOptions = (count = 7) => {
             1
         );
 
+        const isCurrentMonth =
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
+
         return {
             key: `${date.getFullYear()}-${date.getMonth()}`,
             label: date.toLocaleString("default", {
@@ -28,9 +32,9 @@ const buildMonthOptions = (count = 7) => {
             startDate: formatDate(
                 new Date(date.getFullYear(), date.getMonth(), 1)
             ),
-            endDate: formatDate(
-                new Date(date.getFullYear(), date.getMonth() + 1, 1)
-            ),
+            endDate: isCurrentMonth
+                ? formatDate(today)
+                : formatDate(new Date(date.getFullYear(), date.getMonth() + 1, 1)),
         };
     });
 };

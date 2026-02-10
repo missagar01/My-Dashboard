@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Dynamic Base URL
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/login`;
+const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/login`;
 
 export const LoginCredentialsApi = async (formData) => {
     try {

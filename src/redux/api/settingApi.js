@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/settings`;
+const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/settings`;
 
 export const fetchUserDetailsApi = async () => {
     try {
@@ -20,30 +20,6 @@ export const fetchUserDetailsApiById = async (id) => {
     }
 };
 
-export const deleteUserByIdApi = async (id) => {
-    try {
-        await fetch(`${BASE_URL}/users/${id}`, {
-            method: "DELETE",
-        });
-    } catch (error) {
-        console.log("Error deleting user", error);
-    }
-};
-
-export const updateUserDataApi = async ({ id, updatedUser }) => {
-    try {
-        const response = await fetch(`${BASE_URL}/users/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedUser),
-        });
-
-        return await response.json();
-    } catch (error) {
-        console.log("Error updating user", error);
-        return null;
-    }
-};
 
 /**
  * PATCH system_access (append, no overwrite)

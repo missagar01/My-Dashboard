@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/settings`;
+const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/users`;
 
 /**
  * PATCH employee image
@@ -11,10 +11,10 @@ export const patchEmpImageApi = async (id, file) => {
         formData.append("emp_image", file);
 
         const response = await fetch(
-            `${BASE_URL}/users/${id}/emp-image`,
+            `${BASE_URL}/${id}/emp-image`,
             {
                 method: "PATCH",
-                body: formData, // IMPORTANT: no headers
+                body: formData,
             }
         );
 
