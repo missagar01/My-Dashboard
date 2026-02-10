@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
+import { storage } from "../utils/storage";
 import { fetchUserDetailsApi, patchSystemAccessApi, fetchUserDetailsApiById } from "../redux/api/settingApi";
 import { patchEmpImageApi } from "../redux/api/userApi";
 import { fetchSystemsApi } from "../redux/api/systemsApi";
@@ -171,9 +172,9 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
             try {
                 setLoading(true);
 
-                const username = localStorage.getItem("user-name");
-                const role = localStorage.getItem("role");
-                const userId = localStorage.getItem("user_id");
+                const username = storage.get("user-name");
+                const role = storage.get("role");
+                const userId = storage.get("user_id");
 
                 if (username === "admin") {
                     const usersRes = await fetchUserDetailsApi();
@@ -328,7 +329,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
         <div className="w-full">
             <section className="py-4 md:py-4 bg-transparent">
                 <div className="container mx-auto px-4 md:px-8">
-                    {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                    {storage.get("user-name")?.toLowerCase() === "admin" && (
                         <div className="max-w-4xl mx-auto text-center mb-12">
                             <h2
                                 className="
@@ -521,7 +522,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                         </div>
                     )}
 
-                    {localStorage.getItem("user-name")?.toLowerCase() !== "admin" && (
+                    {storage.get("user-name")?.toLowerCase() !== "admin" && (
                         <div>
                             <div
                                 className="
@@ -844,7 +845,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                                 </div>
 
                                 <div ref={allUsersRef}>
-                                    {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                                    {storage.get("user-name")?.toLowerCase() === "admin" && (
                                         <div className="w-full">
                                             <div className="bg-white/60 rounded-lg shadow-md overflow-hidden p-4 md:p-6">
                                                 {/* <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">
@@ -1027,7 +1028,7 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                         <div className="text-center md:text-left">
                             <h4 className="text-xl font-semibold mb-4 text-red-400">Contact Us</h4>
                             <div className="space-y-3">
-                                {localStorage.getItem("user-name")?.toLowerCase() === "admin" && (
+                                {storage.get("user-name")?.toLowerCase() === "admin" && (
                                     <div className="flex items-center justify-center md:justify-start">
                                         <svg className="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />

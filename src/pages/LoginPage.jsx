@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../redux/slice/loginSlice";
+import { storage } from "../utils/storage";
 import { Eye, EyeOff } from "lucide-react";
 
 
@@ -50,14 +51,18 @@ const LoginPage = () => {
     if (isLoggedIn && userData) {
       setIsLoginLoading(false);
 
-      // console.log("User Data:", userData);
+      // Save all data to sessionStorage using safe storage utility
+      Object.keys(userData).forEach((key) => {
+        storage.set(key, userData[key]);
+      });
 
-      // Save data once
-      localStorage.setItem("user_id", userData.id || "");
-      localStorage.setItem("user-name", userData.user_name || userData.username || "");
-      localStorage.setItem("role", userData.role || "");
-      localStorage.setItem("email_id", userData.email_id || userData.email || "");
-      localStorage.setItem("system_access", userData.system_access);
+      // Maintain compatibility for components expecting specific keys
+      if (userData.user_name) {
+        storage.set("user-name", userData.user_name);
+      }
+      if (userData.id) {
+        storage.set("user_id", userData.id);
+      }
 
       if (userData.role === "admin") {
         navigate("/dashboard/admin", { replace: true });

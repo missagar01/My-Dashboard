@@ -8,6 +8,7 @@ import {
   updateSystemApi,
   deleteSystemApi,
 } from "../redux/api/systemsApi";
+import { storage } from "../utils/storage";
 import AllUserScore from "../pages/AllUserScore";
 
 
@@ -48,7 +49,7 @@ export default function AdminLayout({ children }) {
   const [showSystemModal, setShowSystemModal] = useState(false);
   const [editSystem, setEditSystem] = useState(null);
   const [username, setUsername] = useState(() =>
-    localStorage.getItem("user-name")
+    storage.get("user-name")
   );
   const isAdmin = username?.toLowerCase() === "admin";
   const [isSavingSystem, setIsSavingSystem] = useState(false);
@@ -119,11 +120,7 @@ export default function AdminLayout({ children }) {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem("user-name");
-    localStorage.removeItem("activeRoute");
-    localStorage.removeItem("currentUrl");
-    localStorage.removeItem("system_access");
-    sessionStorage.clear();
+    storage.clear();
 
     setUsername(null);
     setSystemAccessList([]);
@@ -145,8 +142,8 @@ export default function AdminLayout({ children }) {
 
   useEffect(() => {
     // Retrieve saved state from localStorage on component mount
-    const savedRoute = localStorage.getItem("activeRoute");
-    const savedUrl = localStorage.getItem("currentUrl");
+    const savedRoute = storage.get("activeRoute");
+    const savedUrl = storage.get("currentUrl");
 
     if (savedRoute) {
       setActiveRoute(savedRoute);
@@ -159,9 +156,8 @@ export default function AdminLayout({ children }) {
   }, []);
 
   useEffect(() => {
-    // Save active route and URL to localStorage whenever they change
-    localStorage.setItem("activeRoute", activeRoute);
-    localStorage.setItem("currentUrl", currentUrl);
+    storage.set("activeRoute", activeRoute);
+    storage.set("currentUrl", currentUrl);
   }, [activeRoute, currentUrl]);
 
   useEffect(() => {
@@ -170,7 +166,7 @@ export default function AdminLayout({ children }) {
       return;
     }
 
-    const storedAccess = localStorage.getItem("system_access");
+    const storedAccess = storage.get("system_access");
 
     if (!storedAccess) {
       setSystemAccessList([]);
@@ -202,7 +198,7 @@ export default function AdminLayout({ children }) {
 
   // Ensure activeRoute is applied correctly on refresh
   useEffect(() => {
-    const savedRoute = localStorage.getItem("activeRoute");
+    const savedRoute = storage.get("activeRoute");
     if (savedRoute && savedRoute !== activeRoute) {
       setActiveRoute(savedRoute);
     }

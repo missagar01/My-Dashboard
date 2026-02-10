@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import LoginPage from "./pages/LoginPage"
 import AdminDashboard from "./pages/Dashboard"
+import { storage } from "../utils/storage";
 import "./index.css"
 
 // Authentication wrapper component
@@ -13,11 +14,15 @@ const PrivateRoute = ({ children, allowedRoles }) => {
   const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
-    const userData = sessionStorage.getItem('userData')
-    if (userData) {
-      const parsedUserData = JSON.parse(userData)
-      setIsAuthenticated(true)
-      setUserRole(parsedUserData.role)
+    const userDataStr = storage.get('userData')
+    if (userDataStr) {
+      try {
+        const parsedUserData = JSON.parse(userDataStr)
+        setIsAuthenticated(true)
+        setUserRole(parsedUserData.role)
+      } catch (e) {
+        console.error("Error parsing userData from session:", e);
+      }
     }
   }, [])
 
@@ -41,9 +46,10 @@ function App() {
 
   useEffect(() => {
     // Check for user preference
+    const theme = storage.get("theme");
     if (
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
+      theme === "dark" ||
+      (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
     ) {
       setDarkMode(true)
       document.documentElement.classList.add("dark")
@@ -57,10 +63,10 @@ function App() {
     setDarkMode(!darkMode)
     if (darkMode) {
       document.documentElement.classList.remove("dark")
-      localStorage.theme = "light"
+      storage.set("theme", "light")
     } else {
       document.documentElement.classList.add("dark")
-      localStorage.theme = "dark"
+      storage.set("theme", "dark")
     }
   }
 

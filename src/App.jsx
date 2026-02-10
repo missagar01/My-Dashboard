@@ -3,11 +3,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/Dashboard";
+import { storage } from "./utils/storage";
 
 const ProtectedRoute = ({ children }) => {
-  const username = localStorage.getItem("user-name");
-
-
+  const username = storage.get("user-name");
 
   // Not logged in → go login
   if (!username) {
