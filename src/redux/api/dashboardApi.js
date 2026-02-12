@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/dashboard`;
+import axiosClient from "./axiosClient";
 
 export const getPendingTodayApi = async ({
     dashboardType,
@@ -10,7 +8,7 @@ export const getPendingTodayApi = async ({
     departmentFilter = "all",
 }) => {
     try {
-        const res = await axios.get(`${BASE_URL}/pendingtoday`, {
+        const res = await axiosClient.get("/dashboard/pendingtoday", {
             params: {
                 dashboardType,
                 role,
@@ -38,7 +36,7 @@ export const getCompletedTodayApi = async ({
     departmentFilter = "all",
 }) => {
     try {
-        const res = await axios.get(`${BASE_URL}/completedtoday`, {
+        const res = await axiosClient.get("/dashboard/completedtoday", {
             params: {
                 dashboardType,
                 role,
@@ -66,7 +64,7 @@ export const getTotalTaskApi = async ({
     departmentFilter = "all",
 }) => {
     try {
-        const res = await axios.get(`${BASE_URL}/total`, {
+        const res = await axiosClient.get("/dashboard/total", {
             params: {
                 dashboardType,
                 role,
@@ -94,7 +92,7 @@ export const getCompletedTaskApi = async ({
     departmentFilter = "all",
 }) => {
     try {
-        const res = await axios.get(`${BASE_URL}/completed`, {
+        const res = await axiosClient.get("/dashboard/completed", {
             params: {
                 dashboardType,
                 role,
@@ -122,7 +120,7 @@ export const getPendingTaskApi = async ({
     departmentFilter = "all",
 }) => {
     try {
-        const res = await axios.get(`${BASE_URL}/pending`, {
+        const res = await axiosClient.get("/dashboard/pending", {
             params: {
                 dashboardType,
                 role,
@@ -150,7 +148,7 @@ export const getOverdueTaskApi = async ({
     departmentFilter = "all",
 }) => {
     try {
-        const res = await axios.get(`${BASE_URL}/overdue`, {
+        const res = await axiosClient.get("/dashboard/overdue", {
             params: {
                 dashboardType,
                 role,

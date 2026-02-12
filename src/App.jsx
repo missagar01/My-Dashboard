@@ -4,12 +4,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/Dashboard";
 import { storage } from "./utils/storage";
+import { isTokenExpired } from "./utils/jwtUtils";
 
 const ProtectedRoute = ({ children }) => {
   const username = storage.get("user-name");
+  const token = storage.get("token");
 
-  // Not logged in → go login
-  if (!username) {
+  // Not logged in or token expired → go login
+  if (!username || !token || isTokenExpired(token)) {
     return <Navigate to="/login" replace />;
   }
 

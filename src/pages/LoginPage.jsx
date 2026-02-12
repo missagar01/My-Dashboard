@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { loginUser } from "../redux/slice/loginSlice";
 import { storage } from "../utils/storage";
 import { Eye, EyeOff } from "lucide-react";
+import { isTokenExpired } from "../utils/jwtUtils";
 
 
 const LoginPage = () => {
@@ -29,6 +30,16 @@ const LoginPage = () => {
   const typingSpeed = 100;
 
   useEffect(() => {
+    // Check for existing valid session on mount
+    const token = storage.get("token");
+    const username = storage.get("user-name");
+
+    if (token && username && !isTokenExpired(token)) {
+      navigate("/dashboard/admin", { replace: true });
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     if (isTyping) {
       if (typedText.length < welcomeText.length) {
         const timeout = setTimeout(() => {
@@ -41,17 +52,11 @@ const LoginPage = () => {
     }
   }, [typedText, isTyping]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoginLoading(true);
-    dispatch(loginUser(formData));
-  };
-
   useEffect(() => {
     if (isLoggedIn && userData) {
       setIsLoginLoading(false);
 
-      // Save all data to sessionStorage using safe storage utility
+      // Save all data to storage (localStorage)
       Object.keys(userData).forEach((key) => {
         storage.set(key, userData[key]);
       });
@@ -64,11 +69,7 @@ const LoginPage = () => {
         storage.set("user_id", userData.id);
       }
 
-      if (userData.role === "admin") {
-        navigate("/dashboard/admin", { replace: true });
-      } else {
-        navigate("/dashboard/admin", { replace: true });
-      }
+      navigate("/dashboard/admin", { replace: true });
     }
 
     if (error) {
@@ -76,6 +77,12 @@ const LoginPage = () => {
       showToast(error, "error");
     }
   }, [isLoggedIn, userData, error, navigate]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoginLoading(true);
+    dispatch(loginUser(formData));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,7 +102,6 @@ const LoginPage = () => {
         {/* Small Logo at Top */}
         <div className="flex justify-center pt-6">
           <div className="relative">
-            {/* <div className="absolute -inset-4 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur opacity-20"></div> */}
             <img
               src="/logo.png"
               alt="Company Logo"
@@ -114,7 +120,6 @@ const LoginPage = () => {
               )}
             </h1>
           </div>
-          {/* <p className="text-gray-500 text-sm mt-2">Secure Login Portal</p> */}
         </div>
 
         <form onSubmit={handleSubmit} className="px-8 pt-4 pb-8 space-y-6">
@@ -139,11 +144,6 @@ const LoginPage = () => {
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                 <i className="fas fa-user text-gray-400"></i>
-              </div>
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                {formData.username && (
-                  <i className="fas fa-check-circle text-green-500 text-sm"></i>
-                )}
               </div>
             </div>
           </div>
@@ -181,7 +181,6 @@ const LoginPage = () => {
                   </button>
                 )}
               </div>
-
             </div>
           </div>
 
@@ -218,9 +217,6 @@ const LoginPage = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
             </div>
-            {/* <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Secure connection</span>
-            </div> */}
           </div>
         </form>
 

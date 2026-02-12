@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/user-score`;
+import axiosClient from "./axiosClient";
 
 /**
  * GET ALL USERS SCORES
@@ -11,13 +11,10 @@ export const fetchUserScoresApi = async ({
     endDate
 }) => {
     try {
-        const query = new URLSearchParams({
-            startDate,
-            endDate
-        }).toString();
-
-        const response = await fetch(`${BASE_URL}?${query}`);
-        return await response.json();
+        const response = await axiosClient.get("/user-score", {
+            params: { startDate, endDate }
+        });
+        return response.data;
     } catch (error) {
         console.log("Error fetching user scores", error);
         return [];
@@ -36,18 +33,11 @@ export const fetchUserScoreApiByName = async (
     { startDate, endDate }
 ) => {
     try {
-        const query = new URLSearchParams({
-            startDate,
-            endDate
-        }).toString();
-
         const encodedName = encodeURIComponent(name);
-
-        const response = await fetch(
-            `${BASE_URL}/${encodedName}?${query}`
-        );
-
-        return await response.json();
+        const response = await axiosClient.get(`/user-score/${encodedName}`, {
+            params: { startDate, endDate }
+        });
+        return response.data;
     } catch (error) {
         console.log("Error fetching user score by name", error);
         return null;

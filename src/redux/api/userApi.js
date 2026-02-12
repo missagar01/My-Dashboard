@@ -1,4 +1,4 @@
-const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/users`;
+import axiosClient from "./axiosClient";
 
 /**
  * PATCH employee image
@@ -10,20 +10,17 @@ export const patchEmpImageApi = async (id, file) => {
         const formData = new FormData();
         formData.append("emp_image", file);
 
-        const response = await fetch(
-            `${BASE_URL}/${id}/emp-image`,
+        const response = await axiosClient.patch(
+            `/users/${id}/emp-image`,
+            formData,
             {
-                method: "PATCH",
-                body: formData,
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
             }
         );
 
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(text || "Failed to upload image");
-        }
-
-        return await response.json();
+        return response.data;
     } catch (error) {
         console.error("Error updating employee image", error);
         throw error;

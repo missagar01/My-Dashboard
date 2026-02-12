@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const BASE_URL = `${import.meta.env.VITE_API_BASE_USER_URL}/attendence`;
+import axiosClient from "./axiosClient";
 
 export const fetchAttendanceSummaryApi = async (
     fromDate,
@@ -12,7 +10,7 @@ export const fetchAttendanceSummaryApi = async (
         if (fromDate) params.fromDate = fromDate;
         if (toDate) params.toDate = toDate;
 
-        const res = await axios.get(BASE_URL, { params });
+        const res = await axiosClient.get("/attendence", { params });
 
         return { data: res.data };
     } catch (err) {

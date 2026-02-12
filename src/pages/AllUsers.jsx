@@ -1,6 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from "react"
 import { storage } from "../utils/storage";
-import { fetchUserDetailsApi, patchSystemAccessApi, fetchUserDetailsApiById } from "../redux/api/settingApi";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    userDetails as fetchAllUsersAction,
+    fetchUserById as fetchUserByIdAction,
+    patchSystemAccess as patchSystemAccessAction
+} from "../redux/slice/settingSlice";
 import { patchEmpImageApi } from "../redux/api/userApi";
 import { fetchSystemsApi } from "../redux/api/systemsApi";
 import { fetchAttendanceSummaryApi } from "../redux/api/attendenceApi";
@@ -13,6 +18,7 @@ import {
     getOverdueTaskApi,
 } from "../redux/api/dashboardApi";
 import { fetchUserScoreApiByName } from "../redux/api/userScoreApi";
+import { decodeToken } from "../utils/jwtUtils";
 
 const formatDate = (d) => d.toISOString().split("T")[0];
 
@@ -46,8 +52,10 @@ const buildMonthOptions = (count = 6) => {
 
 const HomePage = ({ allUsersRef, showAllUsersModal,
     setShowAllUsersModal, }) => {
+    const dispatch = useDispatch();
+    const { userData: allUsers, userDetailsCache, loading: reduxLoading } = useSelector((state) => state.settings);
+
     const [userDetails, setUserDetails] = useState(null);
-    const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("");
     const [departmentFilter, setDepartmentFilter] = useState("");
@@ -81,13 +89,10 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
     const handleSystemAccessPatch = async (id, value) => {
         if (!value.trim()) return;
 
-        await patchSystemAccessApi({
+        dispatch(patchSystemAccessAction({
             id: id,
             system_access: value,
-        });
-
-        const users = await fetchUserDetailsApi();
-        setAllUsers(users);
+        }));
     };
 
     const handleEmpImageChange = async (e) => {
@@ -127,16 +132,15 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
             // PATCH image
             await patchEmpImageApi(userDetails.id, file);
 
-            // ALWAYS re-fetch user (single source of truth)
-            const freshUser = await fetchUserDetailsApiById(userDetails.id);
+            // Fetch fresh details and update Redux
+            const result = await dispatch(fetchUserByIdAction(userDetails.id)).unwrap();
 
-            // Update state only if valid response
-            if (freshUser && freshUser.emp_image) {
-                setUserDetails(freshUser);
+            if (result?.data && result.data.emp_image) {
+                setUserDetails(result.data);
                 setUploadSuccess(`✅ Profile image updated successfully!`);
                 setUploadWarning("");
-                // Clear success message after 3 seconds
-                setTimeout(() => setUploadSuccess(""), 3000);
+                // Clear success message
+                setTimeout(() => setUploadSuccess(""), 15000);
             } else {
                 throw new Error("Image update failed");
             }
@@ -174,17 +178,18 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                 const username = storage.get("user-name");
                 const role = storage.get("role");
-                const userId = storage.get("user_id");
+                const token = storage.get("token");
+
+                // Securely get ID from token if available
+                const decodedToken = decodeToken(token);
+                const userId = decodedToken?.id || storage.get("user_id");
 
                 if (username === "admin") {
-                    const usersRes = await fetchUserDetailsApi();
-                    const users = Array.isArray(usersRes) ? usersRes : [];
-                    setAllUsers(users);
+                    dispatch(fetchAllUsersAction());
 
                     const systemsData = await fetchSystemsApi();
                     setSystemsList(Array.isArray(systemsData) ? systemsData : []);
 
-                    // attendance logic (UNCHANGED)
                     const attendanceRes = await fetchAttendanceSummaryApi();
                     const attendanceList = Array.isArray(attendanceRes?.data?.data)
                         ? attendanceRes.data.data
@@ -196,7 +201,15 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
 
                 if (!userId) return;
 
-                const matchedUser = await fetchUserDetailsApiById(userId);
+                // Use Redux for user details
+                let matchedUser;
+                if (userDetailsCache[userId]) {
+                    matchedUser = userDetailsCache[userId].data;
+                } else {
+                    const result = await dispatch(fetchUserByIdAction(userId)).unwrap();
+                    matchedUser = result?.data;
+                }
+
                 setUserDetails(matchedUser || null);
 
                 if (matchedUser?.user_name && selectedMonth) {
@@ -214,8 +227,6 @@ const HomePage = ({ allUsersRef, showAllUsersModal,
                 const attendanceList = Array.isArray(attendanceRes?.data?.data)
                     ? attendanceRes.data.data
                     : [];
-
-                setAttendance(attendanceList);
 
                 if (matchedUser?.employee_id) {
                     const matchedAttendance = attendanceList.find(
