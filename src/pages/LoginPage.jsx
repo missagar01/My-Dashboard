@@ -133,7 +133,7 @@ const LoginPage = () => {
                 id="username"
                 name="username"
                 type="text"
-                placeholder=""
+                placeholder="Username"
                 required
                 value={formData.username}
                 onChange={handleChange}
@@ -158,7 +158,7 @@ const LoginPage = () => {
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder=""
+                placeholder="Password"
                 required
                 value={formData.password}
                 onChange={handleChange}
@@ -171,15 +171,13 @@ const LoginPage = () => {
                 <i className="fas fa-lock text-gray-400"></i>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {formData.password && (
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="text-gray-500 hover:text-blue-500 focus:outline-none"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="text-gray-500 hover:text-blue-500 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
           </div>

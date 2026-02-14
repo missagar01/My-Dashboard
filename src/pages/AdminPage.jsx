@@ -184,7 +184,7 @@ const AdminPage = ({ allUsersRef, showAllUsersModal, setShowAllUsersModal }) => 
                             </h2>
                             <button onClick={() => setShowAllUsersModal(false)} className="text-2xl font-bold text-gray-500 hover:text-red-600">✕</button>
                         </div>
-                        <div ref={allUsersRef} className="flex-1 overflow-hidden">
+                        <div ref={allUsersRef} className="flex-1 overflow-y-auto">
                             <div className="w-full h-full p-4 md:p-6 flex flex-col">
                                 {allUsers.length === 0 ? (
                                     <p className="text-gray-600">No users found...</p>

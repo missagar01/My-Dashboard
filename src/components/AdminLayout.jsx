@@ -307,11 +307,11 @@ export default function AdminLayout({ children }) {
             />
 
             {/* Sidebar */}
-            <div className="w-80 bg-white/90 backdrop-blur-xl
+            <div className="w-80 h-full bg-white/90 backdrop-blur-xl
                 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.35)]
                 flex flex-col
                 rounded-l-3xl
-                animate-slideInRight">
+                animate-slideInRight overflow-hidden">
               {/* HEADER */}
               <div className="px-6 py-5 border-b relative bg-gradient-to-r from-red-50 to-orange-50">
 
@@ -331,88 +331,91 @@ export default function AdminLayout({ children }) {
                 </p>
               </div>
 
-              {/* SYSTEMS */}
-              <div className="px-5 py-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-                  Systems
-                </p>
-
-                <div className="space-y-1">
-                  {topNavRoutes
-                    .filter((route) => {
-                      const routeId = route.id.toUpperCase();
-                      if (routeId === "HOME") return true;
-                      if (isAdmin) return routeId !== "HOME";
-                      if (DEFAULT_SYSTEMS.includes(routeId)) return true;
-                      return systemAccessList.includes(routeId);
-                    })
-                    .map((route) => (
-                      <button
-                        key={route.id}
-                        onClick={() => {
-                          handleRouteClick(route.url, route.id);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left
-            transition-all duration-200
-                  ${activeRoute === route.id
-                            ? "bg-red-600 text-white shadow"
-                            : "text-gray-700 hover:bg-gray-100"
-                          }`}
-                      >
-                        {route.label}
-                      </button>
-                    ))}
-                </div>
-              </div>
-
-              {isAdmin && activeRoute?.toUpperCase() === "HOME" && (
-                <div className="px-5 py-4 border-t">
+              {/* MIDDLE CONTENT: SCROLLABLE */}
+              <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200">
+                {/* SYSTEMS */}
+                <div className="px-5 py-4">
                   <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-                    Actions
+                    Systems
                   </p>
 
-                  <button
-                    onClick={() => {
-                      setShowAllUsersModal(true);
-                      setShowAllUserScore(false);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
-                  >
-                    Show All Users
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setShowAllUserScore(true);
-                      setShowAllUsersModal(false);
-                      setIsMobileMenuOpen(false);
-
-                      requestAnimationFrame(() => {
-                        allUsersRef.current?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                      });
-                    }}
-                    className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
-                  >
-                    User Score Report
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setEditSystem(null);
-                      setShowSystemModal(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
-                  >
-                    Add / Edit Systems
-                  </button>
+                  <div className="space-y-1">
+                    {topNavRoutes
+                      .filter((route) => {
+                        const routeId = route.id.toUpperCase();
+                        if (routeId === "HOME") return true;
+                        if (isAdmin) return routeId !== "HOME";
+                        if (DEFAULT_SYSTEMS.includes(routeId)) return true;
+                        return systemAccessList.includes(routeId);
+                      })
+                      .map((route) => (
+                        <button
+                          key={route.id}
+                          onClick={() => {
+                            handleRouteClick(route.url, route.id);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left
+              transition-all duration-200
+                    ${activeRoute === route.id
+                              ? "bg-red-600 text-white shadow"
+                              : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                        >
+                          {route.label}
+                        </button>
+                      ))}
+                  </div>
                 </div>
-              )}
+
+                {isAdmin && activeRoute?.toUpperCase() === "HOME" && (
+                  <div className="px-5 py-4 border-t">
+                    <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
+                      Actions
+                    </p>
+
+                    <button
+                      onClick={() => {
+                        setShowAllUsersModal(true);
+                        setShowAllUserScore(false);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                    >
+                      Show All Users
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowAllUserScore(true);
+                        setShowAllUsersModal(false);
+                        setIsMobileMenuOpen(false);
+
+                        requestAnimationFrame(() => {
+                          allUsersRef.current?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
+                        });
+                      }}
+                      className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                    >
+                      User Score Report
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setEditSystem(null);
+                        setShowSystemModal(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 rounded-md text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+                    >
+                      Add / Edit Systems
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* LOGOUT */}
               <div className="mt-auto px-5 py-4 border-t">
