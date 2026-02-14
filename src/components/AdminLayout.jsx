@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { LogOut, X, Construction, Settings } from 'lucide-react'
 import { useNavigate } from "react-router-dom";
 import HomePage from "../pages/AllUsers";
+import AdminPage from "../pages/AdminPage";
 import {
   fetchSystemsApi,
   createSystemApi,
@@ -43,7 +44,7 @@ export default function AdminLayout({ children }) {
   const [currentUrl, setCurrentUrl] = useState("")
   const [isIframeVisible, setIsIframeVisible] = useState(false)
   const [showUnderConstruction, setShowUnderConstruction] = useState(false)
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
   const navigate = useNavigate();
   const [systems, setSystems] = useState([]);
   const [showSystemModal, setShowSystemModal] = useState(false);
@@ -204,33 +205,16 @@ export default function AdminLayout({ children }) {
     }
   }, [activeRoute]);
 
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
 
-    const handleScroll = () => {
-      if (window.scrollY > lastScrollY) {
-        setIsHeaderVisible(false); // Hide header on scroll down
-      } else {
-        setIsHeaderVisible(true); // Show header on scroll up
-      }
-      lastScrollY = window.scrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <div
-      className="flex flex-col h-screen overflow-hidden bg-white bg-cover bg-center bg-no-repeat"
+      className="flex flex-col h-[100dvh] overflow-hidden bg-white bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/bgImage.png')" }}
     >
 
-      <header
-        className={`bg-white/90 border-b border-gray-200 sticky top-0 z-50 shadow-sm transition-transform duration-300
-  ${isHeaderVisible ? "translate-y-0" : "-translate-y-full"}`}
-      >
-        <div className="flex items-center gap-4 px-4 py-2">
+      <header className="bg-white/90 border-b border-gray-200 fixed top-0 left-0 right-0 w-full z-50 shadow-sm transition-all duration-300 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-2 md:gap-4 px-3 md:px-6 py-2">
 
           {/* LEFT: LOGO */}
           <div className="flex-shrink-0">
@@ -282,10 +266,10 @@ export default function AdminLayout({ children }) {
              flex items-center justify-center
              active:scale-95 transition-all duration-200"
             >
-              <div className="flex flex-col gap-[5px]">
-                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-700 to-red-400"></span>
-                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-700 to-red-400"></span>
-                <span className="w-6 h-[3px] rounded-full bg-gradient-to-r from-cyan-900 to-red-400"></span>
+              <div className="flex flex-col gap-[4px]">
+                <span className="w-5 h-[2.5px] rounded-full bg-gradient-to-r from-red-600 to-orange-500"></span>
+                <span className="w-5 h-[2.5px] rounded-full bg-gradient-to-r from-red-600 to-orange-500"></span>
+                <span className="w-5 h-[2.5px] rounded-full bg-gradient-to-r from-red-600 to-orange-500"></span>
               </div>
             </button>
 
@@ -448,16 +432,20 @@ export default function AdminLayout({ children }) {
 
 
       {/* Main Content Layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 pt-[56px] md:pt-[64px] overflow-hidden">
 
         <main className="flex-1 overflow-y-auto bg-transparent">
           {!isIframeVisible && !showUnderConstruction && (
             <>
-              <HomePage
-                allUsersRef={allUsersRef}
-                showAllUsersModal={showAllUsersModal}
-                setShowAllUsersModal={setShowAllUsersModal}
-              />
+              {username?.toLowerCase() === "admin" ? (
+                <AdminPage
+                  allUsersRef={allUsersRef}
+                  showAllUsersModal={showAllUsersModal}
+                  setShowAllUsersModal={setShowAllUsersModal}
+                />
+              ) : (
+                <HomePage />
+              )}
 
               {showAllUserScore && (
                 <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">

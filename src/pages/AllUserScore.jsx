@@ -142,9 +142,9 @@ const AllUserScore = () => {
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* HEADER */}
-                <h1 className="text-2xl font-bold text-gray-800">
+                {/* <h1 className="text-2xl font-bold text-gray-800">
                     User Score Report
-                </h1>
+                </h1> */}
 
                 {/* FILTER CARD */}
                 <div className="bg-white rounded-2xl shadow-md p-5">
