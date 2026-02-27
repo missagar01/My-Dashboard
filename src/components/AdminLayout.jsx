@@ -52,7 +52,7 @@ export default function AdminLayout({ children }) {
   const [username, setUsername] = useState(() =>
     storage.get("user-name")
   );
-  const isAdmin = username?.toLowerCase() === "admin";
+  const isAdmin = ["admin", "aakash agrawal"].includes(username?.toLowerCase());
   const [isSavingSystem, setIsSavingSystem] = useState(false);
   const [toast, setToast] = useState({
     show: false,
@@ -229,7 +229,7 @@ export default function AdminLayout({ children }) {
                   const routeId = route.id.toUpperCase();
                   const usernameLower = username?.toLowerCase();
 
-                  if (usernameLower === "admin") return true;
+                  if (["admin", "aakash agrawal"].includes(usernameLower)) return true;
                   if (routeId === "HOME") return true;
                   if (DEFAULT_SYSTEMS.includes(routeId)) return true;
                   return systemAccessList.includes(routeId);
@@ -275,7 +275,7 @@ export default function AdminLayout({ children }) {
 
 
             {/* DESKTOP: ADMIN → SETTINGS | USER → LOGOUT */}
-            {username?.toLowerCase() === "admin" ? (
+            {["admin", "aakash agrawal"].includes(username?.toLowerCase()) ? (
               <button
                 className="hidden lg:flex w-10 h-10 bg-gray-700 hover:bg-gray-900 rounded-full items-center justify-center"
                 onClick={() => setIsAdminSidebarOpen(true)}
@@ -440,7 +440,7 @@ export default function AdminLayout({ children }) {
         <main className="flex-1 overflow-y-auto bg-transparent">
           {!isIframeVisible && !showUnderConstruction && (
             <>
-              {username?.toLowerCase() === "admin" ? (
+              {["admin", "aakash agrawal"].includes(username?.toLowerCase()) ? (
                 <AdminPage
                   allUsersRef={allUsersRef}
                   showAllUsersModal={showAllUsersModal}

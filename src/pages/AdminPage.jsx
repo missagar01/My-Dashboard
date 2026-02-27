@@ -53,7 +53,7 @@ const AdminPage = ({ allUsersRef, showAllUsersModal, setShowAllUsersModal }) => 
     }, {});
 
     const filteredUsers = allUsers.filter((u) => {
-        if (u.user_name === "admin") return false;
+        if (["admin", "aakash agrawal"].includes(u.user_name?.toLowerCase())) return false;
 
         const matchesSearch =
             u.employee_id?.toString().includes(search) ||

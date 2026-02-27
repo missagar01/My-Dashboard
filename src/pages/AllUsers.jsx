@@ -143,7 +143,7 @@ const HomePage = () => {
                 const decodedToken = decodeToken(token);
                 const userId = decodedToken?.id || storage.get("user_id");
 
-                if (!userId || username === "admin") return;
+                if (!userId || ["admin", "aakash agrawal"].includes(username?.toLowerCase())) return;
 
                 let matchedUser;
                 if (userDetailsCache[userId]) {
